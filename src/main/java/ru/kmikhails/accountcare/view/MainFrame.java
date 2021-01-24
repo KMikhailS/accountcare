@@ -1,5 +1,6 @@
 package ru.kmikhails.accountcare.view;
 
+import org.slf4j.LoggerFactory;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.repository.impl.MockAccountRepository;
 

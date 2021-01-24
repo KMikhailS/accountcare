@@ -1,6 +1,7 @@
 package ru.kmikhails.accountcare.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 public class Account {
@@ -8,7 +9,10 @@ public class Account {
 	private final String accountNumber;
 	private final LocalDate accountDate;
 	private final String company;
-	private final float amount;
+	private final String serviceType;
+	private final List<MeasuringInstrument> instruments;
+	private final Float amount;
+	private final Float amountWithNDS;
 	private final String invoiceNumber;
 	private final LocalDate invoiceDate;
 	private final LocalDate deliveryToAccountingDate;
@@ -22,7 +26,10 @@ public class Account {
 		this.accountNumber = builder.accountNumber;
 		this.accountDate = builder.accountDate;
 		this.company = builder.company;
+		this.serviceType = builder.serviceType;
 		this.amount = builder.amount;
+		this.instruments = builder.instruments;
+		this.amountWithNDS = builder.amountWithNDS;
 		this.invoiceNumber = builder.invoiceNumber;
 		this.invoiceDate = builder.invoiceDate;
 		this.deliveryToAccountingDate = builder.deliveryToAccountingDate;
@@ -94,44 +101,51 @@ public class Account {
 				", accountNumber='" + accountNumber + '\'' +
 				", accountDate=" + accountDate +
 				", company='" + company + '\'' +
+				", serviceType='" + serviceType + '\'' +
+				", instruments=" + instruments +
 				", amount=" + amount +
+				", amountWithNDS=" + amountWithNDS +
 				", invoiceNumber='" + invoiceNumber + '\'' +
-				", invoiceDate='" + invoiceDate + '\'' +
+				", invoiceDate=" + invoiceDate +
 				", deliveryToAccountingDate=" + deliveryToAccountingDate +
 				", inspectionOrganization='" + inspectionOrganization + '\'' +
 				", notes='" + notes + '\'' +
 				", accountFile='" + accountFile + '\'' +
-				", status='" + status + '\'' +
+				", status=" + status +
 				'}';
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == o) {
+		if (this == o){
 			return true;
 		}
 		if (o == null || getClass() != o.getClass()) {
 			return false;
 		}
 		Account account = (Account) o;
-		return Float.compare(account.amount, amount) == 0
-				&& Objects.equals(id, account.id)
-				&& Objects.equals(accountNumber, account.accountNumber)
-				&& Objects.equals(accountDate, account.accountDate)
-				&& Objects.equals(company, account.company)
-				&& Objects.equals(invoiceNumber, account.invoiceNumber)
-				&& Objects.equals(invoiceDate, account.invoiceDate)
-				&& Objects.equals(deliveryToAccountingDate, account.deliveryToAccountingDate)
-				&& Objects.equals(inspectionOrganization, account.inspectionOrganization)
-				&& Objects.equals(notes, account.notes)
-				&& Objects.equals(status, account.status)
-				&& Objects.equals(accountFile, account.accountFile);
+		return Objects.equals(id, account.id) &&
+				Objects.equals(accountNumber, account.accountNumber) &&
+				Objects.equals(accountDate, account.accountDate) &&
+				Objects.equals(company, account.company) &&
+				Objects.equals(serviceType, account.serviceType) &&
+				Objects.equals(instruments, account.instruments) &&
+				Objects.equals(amount, account.amount) &&
+				Objects.equals(amountWithNDS, account.amountWithNDS) &&
+				Objects.equals(invoiceNumber, account.invoiceNumber) &&
+				Objects.equals(invoiceDate, account.invoiceDate) &&
+				Objects.equals(deliveryToAccountingDate, account.deliveryToAccountingDate) &&
+				Objects.equals(inspectionOrganization, account.inspectionOrganization) &&
+				Objects.equals(notes, account.notes) &&
+				Objects.equals(accountFile, account.accountFile) &&
+				status == account.status;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, accountNumber, accountDate, company, amount, invoiceNumber,
-				invoiceDate, deliveryToAccountingDate, inspectionOrganization, notes, accountFile);
+		return Objects.hash(id, accountNumber, accountDate, company, serviceType, instruments, amount,
+				amountWithNDS, invoiceNumber, invoiceDate, deliveryToAccountingDate, inspectionOrganization,
+				notes, accountFile, status);
 	}
 
 	public static class Builder {
@@ -139,7 +153,10 @@ public class Account {
 		private String accountNumber;
 		private LocalDate accountDate;
 		private String company;
-		private float amount;
+		private String serviceType;
+		private List<MeasuringInstrument> instruments;
+		private Float amount;
+		private Float amountWithNDS;
 		private String invoiceNumber;
 		private LocalDate invoiceDate;
 		private LocalDate deliveryToAccountingDate;
@@ -169,13 +186,27 @@ public class Account {
 			return this;
 		}
 
+		public Builder withServiceType(String serviceType) {
+			this.serviceType = serviceType;
+			return this;
+		}
 		public Builder withCompany(String company) {
 			this.company = company;
 			return this;
 		}
 
-		public Builder withAmount(float amount) {
+		public Builder withInstruments(List<MeasuringInstrument> instruments) {
+			this.instruments = instruments;
+			return this;
+		}
+
+		public Builder withAmount(Float amount) {
 			this.amount = amount;
+			return this;
+		}
+
+		public Builder withAmountWithDNS(Float amountWithNDS) {
+			this.amountWithNDS = amountWithNDS;
 			return this;
 		}
 

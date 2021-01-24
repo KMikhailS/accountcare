@@ -15,6 +15,9 @@ dependencies {
     compile group: 'org.springframework', name: 'spring-context', version: '5.3.3'
     compile group: 'org.springframework', name: 'spring-beans', version: '5.3.3'
     compile group: 'org.springframework', name: 'spring-jdbc', version: '5.3.3'
+    compile group: 'org.postgresql', name: 'postgresql', version: '42.2.18'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.0'
+    
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
