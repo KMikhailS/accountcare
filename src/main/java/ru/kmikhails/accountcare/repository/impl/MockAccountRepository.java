@@ -12,8 +12,7 @@ import java.util.Optional;
 public class MockAccountRepository implements CrudRepository<Account> {
 
 	@Override
-	public int save(Account entity) {
-		return 0;
+	public void save(Account entity) {
 	}
 
 	@Override
@@ -33,7 +32,7 @@ public class MockAccountRepository implements CrudRepository<Account> {
 						.withAccountNumber("1111")
 						.withAccountDate(LocalDate.parse("2020-12-02"))
 						.withCompany("CSM")
-						.withAmount(1500.00f)
+//						.withAmount(1500.00f)
 						.withInvoiceNumber("0101001")
 						.withInvoiceDate(LocalDate.parse("2020-12-03"))
 						.withDeliveryToAccountingDate(LocalDate.parse("2020-12-04"))
@@ -42,7 +41,7 @@ public class MockAccountRepository implements CrudRepository<Account> {
 						.withAccountNumber("1111")
 						.withAccountDate(LocalDate.parse("2020-12-02"))
 						.withCompany("UNIIM")
-						.withAmount(4000.00f)
+//						.withAmount(4000.00f)
 						.withInvoiceNumber("020202")
 						.withInvoiceDate(LocalDate.parse("2020-12-03"))
 						.withDeliveryToAccountingDate(LocalDate.parse("2020-12-04"))
@@ -51,7 +50,7 @@ public class MockAccountRepository implements CrudRepository<Account> {
 						.withAccountNumber("22222")
 						.withAccountDate(LocalDate.parse("2020-12-02"))
 						.withCompany("UNIIM")
-						.withAmount(4000.00f)
+//						.withAmount(4000.00f)
 						.withInvoiceNumber("020202")
 						.withInvoiceDate(LocalDate.parse("2020-12-03"))
 						.withDeliveryToAccountingDate(LocalDate.parse("2020-12-04"))
@@ -60,7 +59,7 @@ public class MockAccountRepository implements CrudRepository<Account> {
 						.withAccountNumber("333333")
 						.withAccountDate(LocalDate.parse("2020-12-02"))
 						.withCompany("URAL-TEST")
-						.withAmount(6000.00f)
+//						.withAmount(6000.00f)
 						.withInvoiceNumber("030303")
 						.withInvoiceDate(LocalDate.parse("2020-12-03"))
 						.withDeliveryToAccountingDate(LocalDate.parse("2020-12-04"))
@@ -69,18 +68,23 @@ public class MockAccountRepository implements CrudRepository<Account> {
 						.withAccountNumber("44444")
 						.withAccountDate(LocalDate.parse("2020-12-02"))
 						.withCompany("ЦСМ")
-						.withAmount(2500.00f)
+//						.withAmount(2500.00f)
 						.withInvoiceNumber("040404")
 						.withInvoiceDate(LocalDate.parse("2020-12-03"))
 						.withDeliveryToAccountingDate(LocalDate.parse("2020-12-04"))
 						.build()
 		);
-		accounts.forEach(account -> account.setStatus(AccountStatus.NEW));
+		accounts.forEach(account -> account.setStatus("NEW"));
 		return accounts;
 	}
 
 	@Override
 	public void update(Long id) {
 
+	}
+
+	@Override
+	public Optional<Account> findByAccountNumberAndCompany(String accountNumber, String company) {
+		return Optional.empty();
 	}
 }

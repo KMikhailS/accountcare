@@ -10,16 +10,17 @@ public class Account {
 	private final LocalDate accountDate;
 	private final String company;
 	private final String serviceType;
-	private final List<MeasuringInstrument> instruments;
-	private final Float amount;
-	private final Float amountWithNDS;
+//	private final List<MeasuringInstrument> instruments;
+	private final String instruments;
+	private final String amount;
+	private final String amountWithNDS;
 	private final String invoiceNumber;
 	private final LocalDate invoiceDate;
 	private final LocalDate deliveryToAccountingDate;
 	private final String inspectionOrganization;
 	private final String notes;
 	private final String accountFile;
-	private AccountStatus status;
+	private String status;
 
 	private Account(Builder builder) {
 		this.id = builder.id;
@@ -36,6 +37,7 @@ public class Account {
 		this.inspectionOrganization = builder.inspectionOrganization;
 		this.notes = builder.notes;
 		this.accountFile = builder.accountFile;
+		this.status = builder.status;
 	}
 
 	public Long getId() {
@@ -54,12 +56,24 @@ public class Account {
 		return company;
 	}
 
-	public float getAmount() {
+	public String getAmount() {
 		return amount;
 	}
 
 	public String getInvoiceNumber() {
 		return invoiceNumber;
+	}
+
+	public String getServiceType() {
+		return serviceType;
+	}
+
+	public String getInstruments() {
+		return instruments;
+	}
+
+	public String getAmountWithNDS() {
+		return amountWithNDS;
 	}
 
 	public LocalDate getInvoiceDate() {
@@ -82,11 +96,11 @@ public class Account {
 		return accountFile;
 	}
 
-	public AccountStatus getStatus() {
+	public String getStatus() {
 		return status;
 	}
 
-	public void setStatus(AccountStatus status) {
+	public void setStatus(String status) {
 		this.status = status;
 	}
 
@@ -154,15 +168,17 @@ public class Account {
 		private LocalDate accountDate;
 		private String company;
 		private String serviceType;
-		private List<MeasuringInstrument> instruments;
-		private Float amount;
-		private Float amountWithNDS;
+//		private List<MeasuringInstrument> instruments;
+		private String instruments;
+		private String amount;
+		private String amountWithNDS;
 		private String invoiceNumber;
 		private LocalDate invoiceDate;
 		private LocalDate deliveryToAccountingDate;
 		private String inspectionOrganization;
 		private String notes;
 		private String accountFile;
+		private String status;
 
 		private Builder() {
 		}
@@ -195,17 +211,17 @@ public class Account {
 			return this;
 		}
 
-		public Builder withInstruments(List<MeasuringInstrument> instruments) {
+		public Builder withInstruments(String instruments) {
 			this.instruments = instruments;
 			return this;
 		}
 
-		public Builder withAmount(Float amount) {
+		public Builder withAmount(String amount) {
 			this.amount = amount;
 			return this;
 		}
 
-		public Builder withAmountWithDNS(Float amountWithNDS) {
+		public Builder withAmountWithDNS(String amountWithNDS) {
 			this.amountWithNDS = amountWithNDS;
 			return this;
 		}
@@ -237,6 +253,11 @@ public class Account {
 
 		public Builder withAccountFile(String accountFile) {
 			this.accountFile = accountFile;
+			return this;
+		}
+
+		public Builder withStatus(String status) {
+			this.status = status;
 			return this;
 		}
 	}

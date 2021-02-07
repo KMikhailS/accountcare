@@ -6,34 +6,36 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.entity.AccountStatus;
 import ru.kmikhails.accountcare.exception.AccountException;
+import ru.kmikhails.accountcare.repository.CrudRepository;
 import ru.kmikhails.accountcare.repository.impl.AccountRepository;
 import ru.kmikhails.accountcare.service.AccountService;
+import ru.kmikhails.accountcare.validator.Validator;
 import ru.kmikhails.accountcare.validator.impl.AccountValidator;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-@Service
 public class AccountServiceImpl implements AccountService {
 
-	private final AccountRepository accountRepository;
-	private final AccountValidator accountValidator;
+	private final CrudRepository<Account> accountRepository;
+	private final Validator<Account> accountValidator;
 
-	@Autowired
-	public AccountServiceImpl(AccountRepository accountRepository, AccountValidator accountValidator) {
+	public AccountServiceImpl(CrudRepository<Account> accountRepository, Validator<Account> accountValidator) {
 		this.accountRepository = accountRepository;
 		this.accountValidator = accountValidator;
 	}
 
-	@Transactional
 	@Override
-	public Account addNewAccount(Account account) {
+	public void addNewAccount(Account account) {
 		accountValidator.validate(account);
 		accountRepository.save(account);
 
-		return accountRepository.findByAccountNumberAndCompany(account.getAccountNumber(), account.getCompany())
-				.orElseThrow(() -> new AccountException(
-						String.format("После сохранения не могу найти счёт с номером [%s] и организацией [%s]",
-						account.getAccountNumber(), account.getCompany())));
+//		return accountRepository.findByAccountNumberAndCompany(account.getAccountNumber(), account.getCompany())
+//				.orElseThrow(() -> new AccountException(
+//						String.format("После сохранения не могу найти счёт с номером [%s] и организацией [%s]",
+//						account.getAccountNumber(), account.getCompany())));
 	}
 
 	@Override
@@ -60,5 +62,15 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public void update(Long id) {
 
+	}
+
+	@Override
+	public List<Account> findAllTest() {
+		return new ArrayList<Account>();
+	}
+
+	@Override
+	public Optional<Account> findByAccountNumberAndDate(String accountNumber, LocalDate date) {
+		return Optional.empty();
 	}
 }
