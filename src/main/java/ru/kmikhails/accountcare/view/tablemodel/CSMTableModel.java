@@ -101,6 +101,7 @@ public class CSMTableModel extends CommonTableModel {
 				.filter(acc -> acc.getStatus().equals("NEW"))
 				.findFirst()
 				.ifPresent(account -> accountService.deleteById(account.getId()));
+		accounts = accountService.findAll();
 		this.fireTableDataChanged();
 	}
 

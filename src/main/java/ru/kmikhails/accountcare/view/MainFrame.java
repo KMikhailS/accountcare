@@ -13,6 +13,9 @@ public class MainFrame extends JFrame implements ActionListener {
     private static final String ADD_ROW = "Добавить счёт";
     private static final String DELETE_ROW = "Удалить строку";
     private static final String DELETE_ALL_ROWS = "Удалить все строки";
+    private static final String MENU = "Меню";
+    private static final String[] TABLE_TYPES = new String[]{"ЧЦСМ", "УНИИМ", "другие", "прочие услуги"};
+    private static final String[] YEARS = new String[]{"2021"};
 
     private final AccountService accountService;
 
@@ -57,10 +60,10 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
 
-        JMenu mainMenu = new JMenu("Меню");
+        JMenu mainMenu = new JMenu(MENU);
         menuBar.add(mainMenu);
 
-        JMenuItem addAccountMenuItem = new JMenuItem("Добавить счёт");
+        JMenuItem addAccountMenuItem = new JMenuItem(ADD_ROW);
         mainMenu.add(addAccountMenuItem);
         addAccountMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -82,7 +85,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
         JComboBox<String> yearComboBox = new JComboBox<>();
         yearComboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        yearComboBox.setModel(new DefaultComboBoxModel<String>(new String[]{"2021"}));
+        yearComboBox.setModel(new DefaultComboBoxModel<>(YEARS));
         yearComboBox.setBounds(43, 36, 105, 22);
         buttonPanel.add(yearComboBox);
 
@@ -92,17 +95,11 @@ public class MainFrame extends JFrame implements ActionListener {
         buttonPanel.add(serviceLabel);
 
         JComboBox<String> serviceComboBox = new JComboBox<>();
-        serviceComboBox.setModel(new DefaultComboBoxModel<String>(new String[]{"ЧЦСМ", "УНИИМ", "другие", "прочие услуги"}));
+        serviceComboBox.setModel(new DefaultComboBoxModel<>(TABLE_TYPES));
         serviceComboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
         serviceComboBox.setBounds(181, 36, 125, 22);
-        buttonPanel.add(serviceComboBox);
-
-        JButton showTableButton = new JButton("Показать");
-        showTableButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        showTableButton.setBounds(336, 35, 111, 25);
-        showTableButton.addActionListener(e -> {
+        serviceComboBox.addActionListener(e -> {
             String serviceType = (String) serviceComboBox.getSelectedItem();
-
             switch (serviceType) {
                 case "ЧЦСМ":
                     resetTableModel(csmTableModel);
@@ -120,7 +117,32 @@ public class MainFrame extends JFrame implements ActionListener {
                     throw new IllegalArgumentException("Нет такой модели таблицы");
             }
         });
-        buttonPanel.add(showTableButton);
+        buttonPanel.add(serviceComboBox);
+
+//        JButton showTableButton = new JButton("Показать");
+//        showTableButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
+//        showTableButton.setBounds(336, 35, 111, 25);
+//        showTableButton.addActionListener(e -> {
+//            String serviceType = (String) serviceComboBox.getSelectedItem();
+//
+//            switch (serviceType) {
+//                case "ЧЦСМ":
+//                    resetTableModel(csmTableModel);
+//                    break;
+//                case "УНИИМ":
+//                    resetTableModel(uniimTableModel);
+//                    break;
+//                case "другие":
+//                    resetTableModel(otherTableModel);
+//                    break;
+//                case "прочие услуги":
+//                    resetTableModel(serviceTableModel);
+//                    break;
+//                default:
+//                    throw new IllegalArgumentException("Нет такой модели таблицы");
+//            }
+//        });
+//        buttonPanel.add(showTableButton);
 
         this.add(buttonPanel, BorderLayout.NORTH);
         this.add(mainScrollPane, BorderLayout.CENTER);
