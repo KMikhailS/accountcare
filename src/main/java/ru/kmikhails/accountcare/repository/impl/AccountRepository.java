@@ -1,10 +1,5 @@
 package ru.kmikhails.accountcare.repository.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Repository;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.repository.CrudRepository;
@@ -34,34 +29,6 @@ public class AccountRepository implements CrudRepository<Account> {
 	private final DataSource dataSource;
 	public AccountRepository(DataSource dataSource) {
 		this.dataSource = dataSource;
-	}
-
-	private void insert(PreparedStatement statement, Account account) throws SQLException {
-		statement.setString(1, account.getAccountNumber());
-		if (account.getAccountDate() != null) {
-			statement.setDate(2, Date.valueOf(account.getAccountDate()));
-		} else {
-			statement.setDate(2, null);
-		}
-		statement.setString(3, account.getCompany());
-		statement.setString(4, account.getServiceType());
-		statement.setString(5, account.getAmount());
-		statement.setString(6, account.getAmountWithNDS());
-		statement.setString(7, account.getInstruments());
-		statement.setString(8, account.getInvoiceNumber());
-		if (account.getInvoiceDate() != null) {
-			statement.setDate(9, Date.valueOf(account.getInvoiceDate()));
-		} else {
-			statement.setDate(9, null);
-		}
-		if (account.getDeliveryToAccountingDate() != null) {
-			statement.setDate(10, Date.valueOf(account.getDeliveryToAccountingDate()));
-		} else {
-			statement.setDate(10, null);
-		}
-		statement.setString(11, account.getInspectionOrganization());
-		statement.setString(12, account.getNotes());
-		statement.setString(13, account.getAccountFile());
 	}
 
 	@Override
@@ -110,6 +77,34 @@ public class AccountRepository implements CrudRepository<Account> {
 //			return Optional.empty();
 //		}
 		return Optional.empty();
+	}
+
+	private void insert(PreparedStatement statement, Account account) throws SQLException {
+		statement.setString(1, account.getAccountNumber());
+		if (account.getAccountDate() != null) {
+			statement.setDate(2, Date.valueOf(account.getAccountDate()));
+		} else {
+			statement.setDate(2, null);
+		}
+		statement.setString(3, account.getCompany());
+		statement.setString(4, account.getServiceType());
+		statement.setString(5, account.getAmount());
+		statement.setString(6, account.getAmountWithNDS());
+		statement.setString(7, account.getInstruments());
+		statement.setString(8, account.getInvoiceNumber());
+		if (account.getInvoiceDate() != null) {
+			statement.setDate(9, Date.valueOf(account.getInvoiceDate()));
+		} else {
+			statement.setDate(9, null);
+		}
+		if (account.getDeliveryToAccountingDate() != null) {
+			statement.setDate(10, Date.valueOf(account.getDeliveryToAccountingDate()));
+		} else {
+			statement.setDate(10, null);
+		}
+		statement.setString(11, account.getInspectionOrganization());
+		statement.setString(12, account.getNotes());
+		statement.setString(13, account.getAccountFile());
 	}
 
 	private Account mapResultSetToEntity(ResultSet resultSet) throws SQLException {

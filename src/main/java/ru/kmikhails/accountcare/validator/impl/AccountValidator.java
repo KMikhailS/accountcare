@@ -1,13 +1,10 @@
 package ru.kmikhails.accountcare.validator.impl;
 
-import org.springframework.stereotype.Component;
 import ru.kmikhails.accountcare.entity.Account;
-import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.validator.Validator;
 
 import static ru.kmikhails.accountcare.util.StringUtils.isEmpty;
 
-@Component
 public class AccountValidator implements Validator<Account> {
 
 	@Override

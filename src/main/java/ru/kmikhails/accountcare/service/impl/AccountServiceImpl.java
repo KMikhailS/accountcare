@@ -1,16 +1,11 @@
 package ru.kmikhails.accountcare.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.entity.AccountStatus;
 import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.repository.CrudRepository;
-import ru.kmikhails.accountcare.repository.impl.AccountRepository;
 import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.validator.Validator;
-import ru.kmikhails.accountcare.validator.impl.AccountValidator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

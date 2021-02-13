@@ -3,7 +3,6 @@ package ru.kmikhails.accountcare.view.tablemodel;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.service.AccountService;
 
-import javax.swing.table.AbstractTableModel;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;

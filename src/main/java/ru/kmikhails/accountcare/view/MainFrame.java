@@ -7,7 +7,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.List;
 
 public class MainFrame extends JFrame implements ActionListener {
     private static final String ADD_ROW = "Добавить счёт";
@@ -19,6 +25,8 @@ public class MainFrame extends JFrame implements ActionListener {
 
     private final AccountService accountService;
 
+    private JPanel mainPanel;
+    JPanel buttonPanel;
     private CSMTableModel csmTableModel;
     private UNIIMTableModel uniimTableModel;
     private OtherTableModel otherTableModel;
@@ -34,14 +42,17 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void init() {
+//        mainPanel = new JPanel();
         csmTableModel = new CSMTableModel(accountService);
         uniimTableModel = new UNIIMTableModel(accountService);
         otherTableModel = new OtherTableModel(accountService);
         serviceTableModel = new ServiceTableModel(accountService);
         commonTableModel = csmTableModel;
 
+        int fontSize = Integer.parseInt(System.getProperty("font.size"));
+
         table = new JTable(commonTableModel);
-        font = new Font(null, Font.PLAIN, 18);
+        font = new Font(null, Font.PLAIN, fontSize);
         table.setFont(font);
         table.getTableHeader().setFont(font);
         mainScrollPane = new JScrollPane(table);
@@ -65,16 +76,13 @@ public class MainFrame extends JFrame implements ActionListener {
 
         JMenuItem addAccountMenuItem = new JMenuItem(ADD_ROW);
         mainMenu.add(addAccountMenuItem);
-        addAccountMenuItem.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addNewRow();
-            }
-        });
+        addAccountMenuItem.addActionListener(e -> addNewRow());
+
         table.setComponentPopupMenu(popupMenu);
         table.addMouseListener(new TableMouseListener(table));
 
         this.setLayout(new BorderLayout());
-        JPanel buttonPanel = new JPanel();
+        buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(0, 70));
         buttonPanel.setLayout(null);
 
@@ -94,55 +102,47 @@ public class MainFrame extends JFrame implements ActionListener {
         serviceLabel.setBounds(181, 11, 46, 14);
         buttonPanel.add(serviceLabel);
 
+        JLabel testLabel = new JLabel(System.getProperty("font.size"));
+        testLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        testLabel.setBounds(400, 20, 100, 14);
+        buttonPanel.add(testLabel);
+
+        JButton testButton = new JButton("change propertie");
+        testButton.setBounds(600, 20, 100, 50);
+        testButton.addActionListener(e -> {
+            changeProperty();
+        });
+        buttonPanel.add(testButton);
+
         JComboBox<String> serviceComboBox = new JComboBox<>();
         serviceComboBox.setModel(new DefaultComboBoxModel<>(TABLE_TYPES));
         serviceComboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
         serviceComboBox.setBounds(181, 36, 125, 22);
         serviceComboBox.addActionListener(e -> {
             String serviceType = (String) serviceComboBox.getSelectedItem();
-            switch (serviceType) {
-                case "ЧЦСМ":
-                    resetTableModel(csmTableModel);
-                    break;
-                case "УНИИМ":
-                    resetTableModel(uniimTableModel);
-                    break;
-                case "другие":
-                    resetTableModel(otherTableModel);
-                    break;
-                case "прочие услуги":
-                    resetTableModel(serviceTableModel);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Нет такой модели таблицы");
+            if (serviceType != null) {
+                switch (serviceType) {
+                    case "ЧЦСМ":
+                        resetTableModel(csmTableModel);
+                        break;
+                    case "УНИИМ":
+                        resetTableModel(uniimTableModel);
+                        break;
+                    case "другие":
+                        resetTableModel(otherTableModel);
+                        break;
+                    case "прочие услуги":
+                        resetTableModel(serviceTableModel);
+                        break;
+                    default:
+                        throw new IllegalArgumentException("Нет такой модели таблицы");
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Не выбран тип таблицы",
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
         });
         buttonPanel.add(serviceComboBox);
-
-//        JButton showTableButton = new JButton("Показать");
-//        showTableButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
-//        showTableButton.setBounds(336, 35, 111, 25);
-//        showTableButton.addActionListener(e -> {
-//            String serviceType = (String) serviceComboBox.getSelectedItem();
-//
-//            switch (serviceType) {
-//                case "ЧЦСМ":
-//                    resetTableModel(csmTableModel);
-//                    break;
-//                case "УНИИМ":
-//                    resetTableModel(uniimTableModel);
-//                    break;
-//                case "другие":
-//                    resetTableModel(otherTableModel);
-//                    break;
-//                case "прочие услуги":
-//                    resetTableModel(serviceTableModel);
-//                    break;
-//                default:
-//                    throw new IllegalArgumentException("Нет такой модели таблицы");
-//            }
-//        });
-//        buttonPanel.add(showTableButton);
 
         this.add(buttonPanel, BorderLayout.NORTH);
         this.add(mainScrollPane, BorderLayout.CENTER);
@@ -164,14 +164,15 @@ public class MainFrame extends JFrame implements ActionListener {
                 deleteRow();
                 break;
             default:
-                throw new IllegalArgumentException("");
+                JOptionPane.showMessageDialog(this, String.format("Ошибка при выборе меню [%s]", menuItem.getText()),
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void resetTableModel(CommonTableModel tableModel) {
         this.remove(mainScrollPane);
         this.commonTableModel = tableModel;
-        table = new JTable(this.commonTableModel);
+        table = new JTable(commonTableModel);
         table.setComponentPopupMenu(popupMenu);
         table.setFont(font);
         table.getTableHeader().setFont(font);
@@ -185,14 +186,18 @@ public class MainFrame extends JFrame implements ActionListener {
     public void run() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+            SwingUtilities.invokeLater(() -> new MainFrame(accountService).init());
         } catch (Exception ex) {
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Критическая ошибка отображения формы\nОбратитесь в поддержку",
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
         }
-        SwingUtilities.invokeLater(() -> new MainFrame(accountService).init());
     }
 
     private void addNewRow() {
-        new AccountForm(commonTableModel);
+        new AccountFrm(commonTableModel);
     }
 
     private void deleteRow() {
@@ -202,5 +207,20 @@ public class MainFrame extends JFrame implements ActionListener {
         commonTableModel.deleteRow(accountNumber, date);
         this.revalidate();
         this.repaint();
+    }
+
+    private void changeProperty() {
+        Path path = Paths.get("src/main/resources/config.properties");
+        try {
+            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+            lines.set(1, "font.size=22");
+            Files.write(path, lines, StandardCharsets.UTF_8);
+//            buttonPanel.revalidate();
+//            buttonPanel.repaint();
+//            this.dispose();
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(this, "Ошибка изменения свойств",
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);
+        }
     }
 }

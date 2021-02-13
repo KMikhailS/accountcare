@@ -1,16 +1,9 @@
 package ru.kmikhails.accountcare.view.tablemodel;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import ru.kmikhails.accountcare.entity.Account;
-import ru.kmikhails.accountcare.entity.AccountStatus;
-import ru.kmikhails.accountcare.repository.CrudRepository;
-import ru.kmikhails.accountcare.repository.impl.MockAccountRepository;
 import ru.kmikhails.accountcare.service.AccountService;
 
-import javax.swing.table.AbstractTableModel;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
