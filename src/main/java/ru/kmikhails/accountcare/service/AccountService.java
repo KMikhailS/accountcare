@@ -7,19 +7,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface AccountService {
-
-	void addNewAccount(Account account);
-
-	void deleteById(Long id);
-
-	Account findById(Long id);
-
-	List<Account> findAll();
+public interface AccountService extends Service<Account> {
 
 	void changeStatus(Long id, AccountStatus status);
-
-	void update(Long id);
 
 	List<Account> findAllTest();
 

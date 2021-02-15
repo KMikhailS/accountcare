@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface CrudRepository<E> {
 
-	void save(E entity);
+	Optional<E> save(E entity);
 
 	void deleteById(Long id);
 
@@ -16,6 +16,4 @@ public interface CrudRepository<E> {
 	List<E> findAll();
 
 	void update(Long id);
-
-	Optional<Account> findByAccountNumberAndCompany(String accountNumber, String company);
 }

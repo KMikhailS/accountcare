@@ -23,7 +23,7 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void addNewAccount(Account account) {
+	public void save(Account account) {
 		accountValidator.validate(account);
 		accountRepository.save(account);
 
@@ -61,7 +61,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public List<Account> findAllTest() {
-		return new ArrayList<Account>();
+		return new ArrayList<>();
 	}
 
 	@Override

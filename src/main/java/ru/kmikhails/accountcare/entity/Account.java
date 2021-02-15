@@ -8,19 +8,19 @@ public class Account {
 	private final Long id;
 	private final String accountNumber;
 	private final LocalDate accountDate;
-	private final String company;
+	private final Company company;
 	private final String serviceType;
-//	private final List<MeasuringInstrument> instruments;
 	private final String instruments;
 	private final String amount;
 	private final String amountWithNDS;
 	private final String invoiceNumber;
 	private final LocalDate invoiceDate;
 	private final LocalDate deliveryToAccountingDate;
-	private final String inspectionOrganization;
+	private final InspectionOrganization inspectionOrganization;
 	private final String notes;
 	private final String accountFile;
 	private String status;
+	private final TableType tableType;
 
 	private Account(Builder builder) {
 		this.id = builder.id;
@@ -38,6 +38,7 @@ public class Account {
 		this.notes = builder.notes;
 		this.accountFile = builder.accountFile;
 		this.status = builder.status;
+		this.tableType = builder.tableType;
 	}
 
 	public Long getId() {
@@ -52,7 +53,7 @@ public class Account {
 		return accountDate;
 	}
 
-	public String getCompany() {
+	public Company getCompany() {
 		return company;
 	}
 
@@ -84,7 +85,7 @@ public class Account {
 		return deliveryToAccountingDate;
 	}
 
-	public String getInspectionOrganization() {
+	public InspectionOrganization getInspectionOrganization() {
 		return inspectionOrganization;
 	}
 
@@ -98,6 +99,10 @@ public class Account {
 
 	public String getStatus() {
 		return status;
+	}
+
+	public TableType getTableType() {
+		return tableType;
 	}
 
 	public void setStatus(String status) {
@@ -116,16 +121,17 @@ public class Account {
 				", accountDate=" + accountDate +
 				", company='" + company + '\'' +
 				", serviceType='" + serviceType + '\'' +
-				", instruments=" + instruments +
-				", amount=" + amount +
-				", amountWithNDS=" + amountWithNDS +
+				", instruments='" + instruments + '\'' +
+				", amount='" + amount + '\'' +
+				", amountWithNDS='" + amountWithNDS + '\'' +
 				", invoiceNumber='" + invoiceNumber + '\'' +
 				", invoiceDate=" + invoiceDate +
 				", deliveryToAccountingDate=" + deliveryToAccountingDate +
 				", inspectionOrganization='" + inspectionOrganization + '\'' +
 				", notes='" + notes + '\'' +
 				", accountFile='" + accountFile + '\'' +
-				", status=" + status +
+				", status='" + status + '\'' +
+				", tableType='" + tableType + '\'' +
 				'}';
 	}
 
@@ -152,6 +158,7 @@ public class Account {
 				Objects.equals(inspectionOrganization, account.inspectionOrganization) &&
 				Objects.equals(notes, account.notes) &&
 				Objects.equals(accountFile, account.accountFile) &&
+				Objects.equals(tableType, account.tableType) &&
 				status == account.status;
 	}
 
@@ -159,26 +166,26 @@ public class Account {
 	public int hashCode() {
 		return Objects.hash(id, accountNumber, accountDate, company, serviceType, instruments, amount,
 				amountWithNDS, invoiceNumber, invoiceDate, deliveryToAccountingDate, inspectionOrganization,
-				notes, accountFile, status);
+				notes, accountFile, status, tableType);
 	}
 
 	public static class Builder {
 		private Long id;
 		private String accountNumber;
 		private LocalDate accountDate;
-		private String company;
+		private Company company;
 		private String serviceType;
-//		private List<MeasuringInstrument> instruments;
 		private String instruments;
 		private String amount;
 		private String amountWithNDS;
 		private String invoiceNumber;
 		private LocalDate invoiceDate;
 		private LocalDate deliveryToAccountingDate;
-		private String inspectionOrganization;
+		private InspectionOrganization inspectionOrganization;
 		private String notes;
 		private String accountFile;
 		private String status;
+		private TableType tableType;
 
 		private Builder() {
 		}
@@ -206,7 +213,7 @@ public class Account {
 			this.serviceType = serviceType;
 			return this;
 		}
-		public Builder withCompany(String company) {
+		public Builder withCompany(Company company) {
 			this.company = company;
 			return this;
 		}
@@ -241,7 +248,7 @@ public class Account {
 			return this;
 		}
 
-		public Builder withInspectionOrganization(String inspectionOrganization) {
+		public Builder withInspectionOrganization(InspectionOrganization inspectionOrganization) {
 			this.inspectionOrganization = inspectionOrganization;
 			return this;
 		}
@@ -258,6 +265,11 @@ public class Account {
 
 		public Builder withStatus(String status) {
 			this.status = status;
+			return this;
+		}
+
+		public Builder withTableType(TableType tableType) {
+			this.tableType = tableType;
 			return this;
 		}
 	}

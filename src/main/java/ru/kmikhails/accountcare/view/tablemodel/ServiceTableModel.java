@@ -94,7 +94,7 @@ public class ServiceTableModel extends CommonTableModel {
 	}
 
 	public void addRow(Account account) {
-		accountService.addNewAccount(account);
+		accountService.save(account);
 		accounts = accountService.findAll();
 		this.fireTableDataChanged();
 	}
