@@ -60,6 +60,11 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
     }
 
     @Override
+    public List<InspectionOrganization> findAllByTableType(String tableType) {
+        return null;
+    }
+
+    @Override
     public void update(Long id) {
 
     }

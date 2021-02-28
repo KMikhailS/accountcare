@@ -25,7 +25,7 @@ public class ServiceTableModel extends CommonTableModel {
 
 	public ServiceTableModel(AccountService accountService) {
 		this.accountService = accountService;
-		this.accounts = accountService.findAll();
+		this.accounts = accountService.findAllByTableType("прочие услуги");
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class ServiceTableModel extends CommonTableModel {
 			case 1:
 				return account.getAccountDate();
 			case 2:
-				return account.getInspectionOrganization();
+				return account.getInspectionOrganization().getInspectionOrganization();
 			case 3:
 				return account.getServiceType();
 			case 4:

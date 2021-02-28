@@ -11,6 +11,7 @@ import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.service.impl.AccountServiceImpl;
 import ru.kmikhails.accountcare.validator.Validator;
 import ru.kmikhails.accountcare.validator.impl.AccountValidator;
+import ru.kmikhails.accountcare.view.MainFrame;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +37,8 @@ public class AccountCareApplication {
 		CrudRepository<Company> companyRepository = new CompanyRepository(dataSource);
 		CrudRepository<InspectionOrganization> inspectionOrganizationRepository = new InspectionOrganizationRepository(dataSource);
 		CrudRepository<TableType> tableTypesRepository = new TableTypeRepository(dataSource);
-//		AccountService accountService = new AccountServiceImpl(mockRepository, validator);
-//		MainFrame mainFrame = new MainFrame(accountService);
-//		mainFrame.run();
+		AccountService accountService = new AccountServiceImpl(accountRepository, validator);
+		MainFrame mainFrame = new MainFrame(accountService);
+		mainFrame.run();
 	}
 }

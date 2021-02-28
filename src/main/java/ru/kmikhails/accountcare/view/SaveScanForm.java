@@ -4,13 +4,14 @@ import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 
 public class SaveScanForm extends JFrame {
 //	private JLabel URLLabel = new JLabel("Download URL: ");
 //	private JTextField URLField = new JTextField(30);
-	private JFilePicker filePicker = new JFilePicker("Скан для сохранения: ", "Открыть");
+	private JFilePicker filePicker = new JFilePicker(new Font(null, Font.PLAIN, 14), "Открыть");
 
 	private JButton saveButton = new JButton("Сохранить");
 	private JButton quitButton = new JButton("Выход");
@@ -111,6 +112,7 @@ public class SaveScanForm extends JFrame {
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, "Ошибка сохранения скана",
 					"Ошибка", JOptionPane.ERROR_MESSAGE);
+			this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
 		}
 		JOptionPane.showMessageDialog(this, "Скан сохранён",
 				"Сохранение", JOptionPane.INFORMATION_MESSAGE);

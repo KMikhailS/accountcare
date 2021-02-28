@@ -102,17 +102,17 @@ public class MainFrame extends JFrame implements ActionListener {
         serviceLabel.setBounds(181, 11, 46, 14);
         buttonPanel.add(serviceLabel);
 
-        JLabel testLabel = new JLabel(System.getProperty("font.size"));
-        testLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        testLabel.setBounds(400, 20, 100, 14);
-        buttonPanel.add(testLabel);
+//        JLabel testLabel = new JLabel(System.getProperty("font.size"));
+//        testLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
+//        testLabel.setBounds(400, 20, 100, 14);
+//        buttonPanel.add(testLabel);
 
-        JButton testButton = new JButton("change propertie");
-        testButton.setBounds(600, 20, 100, 50);
-        testButton.addActionListener(e -> {
-            changeProperty();
-        });
-        buttonPanel.add(testButton);
+//        JButton testButton = new JButton("change propertie");
+//        testButton.setBounds(600, 20, 100, 50);
+//        testButton.addActionListener(e -> {
+//            changeProperty();
+//        });
+//        buttonPanel.add(testButton);
 
         JComboBox<String> serviceComboBox = new JComboBox<>();
         serviceComboBox.setModel(new DefaultComboBoxModel<>(TABLE_TYPES));
@@ -197,7 +197,7 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void addNewRow() {
-        new AccountFrm(commonTableModel);
+        new AccountForm(commonTableModel);
     }
 
     private void deleteRow() {

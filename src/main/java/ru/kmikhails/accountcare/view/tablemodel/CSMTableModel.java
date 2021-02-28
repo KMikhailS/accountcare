@@ -25,7 +25,7 @@ public class CSMTableModel extends CommonTableModel {
 
 	public CSMTableModel(AccountService accountService) {
 		this.accountService = accountService;
-		this.accounts = accountService.findAll();
+		this.accounts = accountService.findAllByTableType("ЧЦСМ");
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class CSMTableModel extends CommonTableModel {
 			case 1:
 				return account.getAccountDate();
 			case 2:
-				return account.getCompany();
+				return account.getCompany().getCompany();
 			case 3:
 				return account.getInstruments();
 			case 4:

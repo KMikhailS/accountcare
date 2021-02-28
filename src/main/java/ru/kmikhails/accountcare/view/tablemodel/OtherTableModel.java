@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class OtherTableModel extends CommonTableModel {
 
 	private static final String[] TABLE_HEADERS = {
-			"№ счета", "Дата", "Проверяющая рганизация", "Предприятие", "Наименование СИ", "Сумма", "Сумма с НДС",
+			"№ счета", "Дата", "Проверяющая организация", "Предприятие", "Наименование СИ", "Сумма", "Сумма с НДС",
 			"№ Счет фактуры", "Дата Счета фактуры", "Дата сдачи в бух", "Примечания"
 	};
 
@@ -25,7 +25,7 @@ public class OtherTableModel extends CommonTableModel {
 
 	public OtherTableModel(AccountService accountService) {
 		this.accountService = accountService;
-		this.accounts = accountService.findAll();
+		this.accounts = accountService.findAllByTableType("другие");
 	}
 
 	@Override
@@ -63,9 +63,9 @@ public class OtherTableModel extends CommonTableModel {
 			case 1:
 				return account.getAccountDate();
 			case 2:
-				return account.getInspectionOrganization();
+				return account.getInspectionOrganization().getInspectionOrganization();
 			case 3:
-				return account.getCompany();
+				return account.getCompany().getCompany();
 			case 4:
 				return account.getInstruments();
 			case 5:

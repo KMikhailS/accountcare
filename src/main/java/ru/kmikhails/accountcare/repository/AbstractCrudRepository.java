@@ -98,7 +98,7 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
         }
     }
 
-    protected List<E> findAll(String findAllQuery) {
+    public List<E> findAll(String findAllQuery) {
         try (final PreparedStatement statement = dataSource.getConnection().prepareStatement(findAllQuery)) {
 
             try (final ResultSet resultSet = statement.executeQuery()) {

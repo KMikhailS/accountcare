@@ -10,6 +10,7 @@ public class JFilePicker extends JPanel {
 	private JLabel label;
 	private JTextField textField;
 	private JButton button;
+	private Font font;
 
 	private JFileChooser fileChooser;
 
@@ -17,22 +18,25 @@ public class JFilePicker extends JPanel {
 	public static final int MODE_OPEN = 1;
 	public static final int MODE_SAVE = 2;
 
-	public JFilePicker(String textFieldLabel, String buttonLabel) {
-		this.textFieldLabel = textFieldLabel;
+	public JFilePicker(Font font, String buttonLabel) {
+//		this.textFieldLabel = textFieldLabel;
 		this.buttonLabel = buttonLabel;
+		this.font = font;
 
 		fileChooser = new JFileChooser();
 
 		setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		label = new JLabel(textFieldLabel);
+//		label = new JLabel(textFieldLabel);
 
 		textField = new JTextField(30);
+		textField.setFont(font);
 		button = new JButton(buttonLabel);
+		button.setFont(font);
 
 		button.addActionListener(e -> buttonActionPerformed());
 
-		add(label);
+//		add(label);
 		add(textField);
 		add(button);
 	}

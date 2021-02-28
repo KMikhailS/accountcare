@@ -33,9 +33,18 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
             "JOIN table_types t " +
             "ON a.table_type_id = t.table_type_id " +
             "WHERE a.account_number = ? AND a.company_id = ? AND status = 'NEW'";
-    private static final String FIND_ALL_BY_STATUS_AND_TABLE_TYPE_QUERY = "SELECT * FROM accounts WHERE status = ?";
-
-//	private final DataSource dataSource;
+    private static final String FIND_ALL_BY_TABLE_TYPE_QUERY =
+            "SELECT a.account_id, a.status, a.instruments, a.account_number, a.account_date, a.company_id, c.company, " +
+                    "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
+                    "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id, t.table_type, a.notes " +
+                    "FROM accounts a " +
+                    "JOIN companies c " +
+                    "ON a.company_id = c.company_id " +
+                    "JOIN inspection_organizations io " +
+                    "ON a.inspection_organization_id = io.inspection_organization_id " +
+                    "JOIN table_types t " +
+                    "ON a.table_type_id = t.table_type_id " +
+                    "WHERE t.table_type = ? AND status = 'NEW'";
 
     public AccountRepository(DataSource dataSource) {
         super(dataSource, ADD_QUERY,  FIND_BY_ID_QUERY);
@@ -80,12 +89,13 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     }
 
     @Override
-    public List<Account> findAll() {
-//		List<Account> accountList = jdbcTemplate.query(FIND_ALL_QUERY, rowMapper());
-//		System.out.println(accountList);
-        return findAllByStringParam("NEW", FIND_ALL_BY_STATUS_AND_TABLE_TYPE_QUERY, STRING_PARAM_SETTER);
+    public List<Account> findAllByTableType(String tableType) {
+        return findAllByStringParam(tableType, FIND_ALL_BY_TABLE_TYPE_QUERY, STRING_PARAM_SETTER);
+    }
 
-//		return accountList;
+    @Override
+    public List<Account> findAll() {
+        return new ArrayList<>();
     }
 
     @Override
@@ -170,6 +180,4 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                         .build())
                 .build();
     }
-
-
 }

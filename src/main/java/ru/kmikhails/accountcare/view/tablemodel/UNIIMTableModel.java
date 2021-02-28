@@ -25,7 +25,7 @@ public class UNIIMTableModel extends CommonTableModel {
 
     public UNIIMTableModel(AccountService accountService) {
         this.accountService = accountService;
-        this.accounts = accountService.findAll();
+        this.accounts = accountService.findAllByTableType("УНИИМ");
     }
 
     @Override

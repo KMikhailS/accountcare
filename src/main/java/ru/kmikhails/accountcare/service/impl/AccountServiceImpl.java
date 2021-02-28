@@ -46,7 +46,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public List<Account> findAll() {
-		return accountRepository.findAll();
+		return new ArrayList<>();
 	}
 
 	@Override
@@ -60,8 +60,8 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public List<Account> findAllTest() {
-		return new ArrayList<>();
+	public List<Account> findAllByTableType(String tableType) {
+		return accountRepository.findAllByTableType(tableType);
 	}
 
 	@Override
