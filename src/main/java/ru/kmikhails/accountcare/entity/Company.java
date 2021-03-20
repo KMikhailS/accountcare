@@ -43,10 +43,7 @@ public class Company {
 
     @Override
     public String toString() {
-        return "Company{" +
-                "id=" + id +
-                ", company='" + company + '\'' +
-                '}';
+        return company;
     }
 
     public static class Builder {

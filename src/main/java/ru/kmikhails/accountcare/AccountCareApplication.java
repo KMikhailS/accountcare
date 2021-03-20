@@ -9,6 +9,9 @@ import ru.kmikhails.accountcare.repository.DataSource;
 import ru.kmikhails.accountcare.repository.impl.*;
 import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.service.impl.AccountServiceImpl;
+import ru.kmikhails.accountcare.service.impl.CompanyService;
+import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
+import ru.kmikhails.accountcare.service.impl.TableTypeService;
 import ru.kmikhails.accountcare.validator.Validator;
 import ru.kmikhails.accountcare.validator.impl.AccountValidator;
 import ru.kmikhails.accountcare.view.MainFrame;
@@ -38,7 +41,11 @@ public class AccountCareApplication {
 		CrudRepository<InspectionOrganization> inspectionOrganizationRepository = new InspectionOrganizationRepository(dataSource);
 		CrudRepository<TableType> tableTypesRepository = new TableTypeRepository(dataSource);
 		AccountService accountService = new AccountServiceImpl(accountRepository, validator);
-		MainFrame mainFrame = new MainFrame(accountService);
+		CompanyService companyService = new CompanyService(companyRepository);
+		InspectionOrganizationService inspectionOrganizationService =
+				new InspectionOrganizationService(inspectionOrganizationRepository);
+		TableTypeService tableTypeService = new TableTypeService(tableTypesRepository);
+		MainFrame mainFrame = new MainFrame(accountService, companyService, tableTypeService, inspectionOrganizationService);
 		mainFrame.run();
 	}
 }

@@ -30,4 +30,8 @@ public abstract class CommonTableModel extends AbstractTableModel {
     public abstract void deleteRow(String accountNumber, LocalDate date);
 
     public abstract void addRow(Account account);
+
+    public abstract Account findAccount(String accountNumber, LocalDate date);
+
+    public abstract void update(Account account);
 }

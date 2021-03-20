@@ -65,13 +65,16 @@ public class TableTypeRepository extends AbstractCrudRepository<TableType> {
     }
 
     @Override
-    public void update(Long id) {
+    public void update(TableType tableType) {
 
     }
 
     @Override
     protected TableType mapResultSetToEntity(ResultSet resultSet) throws SQLException {
-        return TableType.builder().withTableType(resultSet.getString("table_type")).build();
+        return TableType.builder()
+                .withId(resultSet.getLong("table_type_id"))
+                .withTableType(resultSet.getString("table_type"))
+                .build();
     }
 
     @Override

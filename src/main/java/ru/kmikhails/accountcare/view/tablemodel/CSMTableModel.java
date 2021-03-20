@@ -1,6 +1,7 @@
 package ru.kmikhails.accountcare.view.tablemodel;
 
 import ru.kmikhails.accountcare.entity.Account;
+import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.service.AccountService;
 
 import java.time.LocalDate;
@@ -63,7 +64,7 @@ public class CSMTableModel extends CommonTableModel {
 			case 1:
 				return account.getAccountDate();
 			case 2:
-				return account.getCompany().getCompany();
+				return account.getCompany();
 			case 3:
 				return account.getInstruments();
 			case 4:
@@ -94,13 +95,28 @@ public class CSMTableModel extends CommonTableModel {
 				.filter(acc -> acc.getStatus().equals("NEW"))
 				.findFirst()
 				.ifPresent(account -> accountService.deleteById(account.getId()));
-		accounts = accountService.findAll();
+		accounts = accountService.findAllByTableType("ЧЦСМ");
 		this.fireTableDataChanged();
 	}
 
 	public void addRow(Account account) {
 		accountService.save(account);
-		accounts = accountService.findAll();
+		accounts = accountService.findAllByTableType("ЧЦСМ");
+		this.fireTableDataChanged();
+	}
+
+	public Account findAccount(String accountNumber, LocalDate date) {
+		return accounts.stream()
+				.filter(acc -> acc.getAccountNumber().equals(accountNumber))
+				.filter(acc -> acc.getAccountDate().equals(date))
+				.filter(acc -> acc.getStatus().equals("NEW"))
+				.findFirst()
+				.orElseThrow(() -> new AccountException(""));
+	}
+
+	public void update(Account account) {
+		accountService.update(account);
+		accounts = accountService.findAllByTableType("ЧЦСМ");
 		this.fireTableDataChanged();
 	}
 }

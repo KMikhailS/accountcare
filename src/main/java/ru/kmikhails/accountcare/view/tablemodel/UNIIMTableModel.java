@@ -1,6 +1,7 @@
 package ru.kmikhails.accountcare.view.tablemodel;
 
 import ru.kmikhails.accountcare.entity.Account;
+import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.service.AccountService;
 
 import java.time.LocalDate;
@@ -92,12 +93,28 @@ public class UNIIMTableModel extends CommonTableModel {
                 .filter(acc -> acc.getStatus().equals("NEW"))
                 .findFirst()
                 .ifPresent(account -> accountService.deleteById(account.getId()));
+        accounts = accountService.findAllByTableType("УНИИМ");
         this.fireTableDataChanged();
     }
 
     public void addRow(Account account) {
         accountService.save(account);
-        accounts = accountService.findAll();
+        accounts = accountService.findAllByTableType("УНИИМ");
+        this.fireTableDataChanged();
+    }
+
+    public Account findAccount(String accountNumber, LocalDate date) {
+        return accounts.stream()
+                .filter(acc -> acc.getAccountNumber().equals(accountNumber))
+                .filter(acc -> acc.getAccountDate().equals(date))
+                .filter(acc -> acc.getStatus().equals("NEW"))
+                .findFirst()
+                .orElseThrow(() -> new AccountException("Счёта с таким номером и датой не существует"));
+    }
+
+    public void update(Account account) {
+        accountService.update(account);
+        accounts = accountService.findAllByTableType("ЧЦСМ");
         this.fireTableDataChanged();
     }
 }

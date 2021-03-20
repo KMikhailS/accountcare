@@ -43,10 +43,7 @@ public class TableType {
 
     @Override
     public String toString() {
-        return "TableType{" +
-                "id=" + id +
-                ", tableType='" + tableType + '\'' +
-                '}';
+        return tableType;
     }
 
     public static class Builder {

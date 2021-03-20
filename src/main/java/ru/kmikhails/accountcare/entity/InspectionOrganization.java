@@ -43,10 +43,7 @@ public class InspectionOrganization {
 
     @Override
     public String toString() {
-        return "InspectionOrganization{" +
-                "id=" + id +
-                ", inspectionOrganization='" + inspectionOrganization + '\'' +
-                '}';
+        return inspectionOrganization;
     }
 
     public static class Builder {

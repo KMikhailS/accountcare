@@ -17,22 +17,22 @@ import java.util.Optional;
 public class AccountRepository extends AbstractCrudRepository<Account> {
     private static final String ADD_QUERY = "INSERT INTO accounts (account_number, account_date, company_id, " +
             "service_type, amount, amount_with_nds, instruments, invoice_number, invoice_date, " +
-            "delivery_to_accounting_date, inspection_organization_id, notes, account_file_path, table_type_id) VALUES (?, ?, ?, ?, ?, " +
-            "?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String DELETE_QUERY = "DELETE FROM accounts WHERE account_id = ?";
+            "delivery_to_accounting_date, inspection_organization_id, notes, account_file_path, table_type_id) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM accounts WHERE account_id = ?";
+    private static final String DELETE_QUERY = "UPDATE accounts SET status = 'DELETED' WHERE account_id = ?";
     private static final String FIND_BY_ACCOUNT_NUMBER_AND_COMPANY =
             "SELECT a.account_id, a.status, a.instruments, a.account_number, a.account_date, a.company_id, c.company, " +
-            "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
-            "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id, t.table_type, a.notes " +
-            "FROM accounts a " +
-            "JOIN companies c " +
-            "ON a.company_id = c.company_id " +
-            "JOIN inspection_organizations io " +
-            "ON a.inspection_organization_id = io.inspection_organization_id " +
-            "JOIN table_types t " +
-            "ON a.table_type_id = t.table_type_id " +
-            "WHERE a.account_number = ? AND a.company_id = ? AND status = 'NEW'";
+                    "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
+                    "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id, t.table_type, a.notes " +
+                    "FROM accounts a " +
+                    "JOIN companies c " +
+                    "ON a.company_id = c.company_id " +
+                    "JOIN inspection_organizations io " +
+                    "ON a.inspection_organization_id = io.inspection_organization_id " +
+                    "JOIN table_types t " +
+                    "ON a.table_type_id = t.table_type_id " +
+                    "WHERE a.account_number = ? AND a.company_id = ? AND status = 'NEW'";
     private static final String FIND_ALL_BY_TABLE_TYPE_QUERY =
             "SELECT a.account_id, a.status, a.instruments, a.account_number, a.account_date, a.company_id, c.company, " +
                     "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
@@ -45,9 +45,13 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                     "JOIN table_types t " +
                     "ON a.table_type_id = t.table_type_id " +
                     "WHERE t.table_type = ? AND status = 'NEW'";
+    private static final String UPDATE = "UPDATE accounts SET account_number = ?, account_date = ?, company_id = ?," +
+            "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
+            "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
+            "table_type_id = ? WHERE account_id = ?";
 
     public AccountRepository(DataSource dataSource) {
-        super(dataSource, ADD_QUERY,  FIND_BY_ID_QUERY);
+        super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                 findStatement.setString(1, account.getAccountNumber());
                 findStatement.setLong(2, account.getCompany().getId());
 
-                try(final ResultSet resultSet = findStatement.executeQuery()) {
+                try (final ResultSet resultSet = findStatement.executeQuery()) {
                     if (resultSet.next()) {
                         Optional<Account> resultAccount = Optional.of(mapResultSetToEntity(resultSet));
                         connection.commit();
@@ -99,8 +103,18 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     }
 
     @Override
-    public void update(Long id) {
+    public void update(Account account) {
+        try (final Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(UPDATE)) {
 
+            insert(statement, account);
+            statement.setLong(15, account.getId());
+
+            statement.executeUpdate();
+
+        } catch (SQLException ex) {
+            throw new DataBaseException(ex);
+        }
     }
 
     public Optional<Account> findByAccountNumberAndCompany(String accountNumber, long companyId) {
@@ -166,8 +180,10 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                 .withAmount(resultSet.getString("amount"))
                 .withAmountWithDNS(resultSet.getString("amount_with_nds"))
                 .withInvoiceNumber(resultSet.getString("invoice_number"))
-				.withInvoiceDate(LocalDate.parse(resultSet.getString("invoice_date")))
-				.withDeliveryToAccountingDate(LocalDate.parse(resultSet.getString("delivery_to_accounting_date")))
+                .withInvoiceDate(resultSet.getString("invoice_date") != null
+                        ? LocalDate.parse(resultSet.getString("invoice_date")) : null)
+                .withDeliveryToAccountingDate(resultSet.getString("delivery_to_accounting_date") != null
+                        ? LocalDate.parse(resultSet.getString("delivery_to_accounting_date")) : null)
                 .withInspectionOrganization(InspectionOrganization.builder()
                         .withId(resultSet.getLong("inspection_organization_id"))
                         .withInspectionOrganization(resultSet.getString("inspection_organization"))

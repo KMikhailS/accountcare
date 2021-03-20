@@ -55,8 +55,8 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void update(Long id) {
-
+	public void update(Account account) {
+		accountRepository.update(account);
 	}
 
 	@Override

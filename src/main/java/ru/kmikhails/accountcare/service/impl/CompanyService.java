@@ -1,12 +1,21 @@
 package ru.kmikhails.accountcare.service.impl;
 
+import ru.kmikhails.accountcare.entity.Company;
+import ru.kmikhails.accountcare.repository.CrudRepository;
+import ru.kmikhails.accountcare.repository.impl.CompanyRepository;
 import ru.kmikhails.accountcare.service.Service;
 
 import java.util.List;
 
-public class CompanyService implements Service<String> {
+public class CompanyService implements Service<Company> {
+
+    private final CrudRepository<Company> companyRepository;
+
+    public CompanyService(CrudRepository<Company> companyRepository) {
+        this.companyRepository = companyRepository;
+    }
     @Override
-    public void save(String entity) {
+    public void save(Company entity) {
 
     }
 
@@ -16,17 +25,17 @@ public class CompanyService implements Service<String> {
     }
 
     @Override
-    public String findById(Long id) {
+    public Company findById(Long id) {
         return null;
     }
 
     @Override
-    public List<String> findAll() {
-        return null;
+    public List<Company> findAll() {
+        return companyRepository.findAll();
     }
 
     @Override
-    public void update(Long id) {
+    public void update(Company company) {
 
     }
 }

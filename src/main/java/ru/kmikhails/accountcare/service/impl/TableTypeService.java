@@ -1,12 +1,20 @@
 package ru.kmikhails.accountcare.service.impl;
 
+import ru.kmikhails.accountcare.entity.TableType;
+import ru.kmikhails.accountcare.repository.CrudRepository;
 import ru.kmikhails.accountcare.service.Service;
 
 import java.util.List;
 
-public class TableTypeService implements Service<String> {
+public class TableTypeService implements Service<TableType> {
+
+    private final CrudRepository<TableType> tableTypeRepository;
+
+    public TableTypeService(CrudRepository<TableType> tableTypeRepository) {
+        this.tableTypeRepository = tableTypeRepository;
+    }
     @Override
-    public void save(String entity) {
+    public void save(TableType entity) {
 
     }
 
@@ -16,17 +24,17 @@ public class TableTypeService implements Service<String> {
     }
 
     @Override
-    public String findById(Long id) {
+    public TableType findById(Long id) {
         return null;
     }
 
     @Override
-    public List<String> findAll() {
-        return null;
+    public List<TableType> findAll() {
+        return tableTypeRepository.findAll();
     }
 
     @Override
-    public void update(Long id) {
+    public void update(TableType tableType) {
 
     }
 }

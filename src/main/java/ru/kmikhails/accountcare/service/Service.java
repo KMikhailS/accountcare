@@ -12,5 +12,5 @@ public interface Service<E> {
 
     List<E> findAll();
 
-    void update(Long id);
+    void update(E e);
 }

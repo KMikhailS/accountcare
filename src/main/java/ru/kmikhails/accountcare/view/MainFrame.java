@@ -1,6 +1,13 @@
 package ru.kmikhails.accountcare.view;
 
+import ru.kmikhails.accountcare.entity.Account;
+import ru.kmikhails.accountcare.entity.Company;
+import ru.kmikhails.accountcare.entity.InspectionOrganization;
+import ru.kmikhails.accountcare.entity.TableType;
 import ru.kmikhails.accountcare.service.AccountService;
+import ru.kmikhails.accountcare.service.impl.CompanyService;
+import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
+import ru.kmikhails.accountcare.service.impl.TableTypeService;
 import ru.kmikhails.accountcare.view.tablemodel.*;
 
 import javax.swing.*;
@@ -17,16 +24,17 @@ import java.util.List;
 
 public class MainFrame extends JFrame implements ActionListener {
     private static final String ADD_ROW = "Добавить счёт";
-    private static final String DELETE_ROW = "Удалить строку";
-    private static final String DELETE_ALL_ROWS = "Удалить все строки";
+    private static final String DELETE_ROW = "Удалить счёт";
+    private static final String UPDATE_ROW = "Обновить счёт";
     private static final String MENU = "Меню";
     private static final String[] TABLE_TYPES = new String[]{"ЧЦСМ", "УНИИМ", "другие", "прочие услуги"};
     private static final String[] YEARS = new String[]{"2021"};
 
     private final AccountService accountService;
+    private final CompanyService companyService;
+    private final InspectionOrganizationService inspectionOrganizationService;
+    private final TableTypeService tableTypeService;
 
-    private JPanel mainPanel;
-    JPanel buttonPanel;
     private CSMTableModel csmTableModel;
     private UNIIMTableModel uniimTableModel;
     private OtherTableModel otherTableModel;
@@ -35,10 +43,19 @@ public class MainFrame extends JFrame implements ActionListener {
     private Font font;
     private CommonTableModel commonTableModel;
     private JTable table;
+    private JPanel buttonPanel;
     private JScrollPane mainScrollPane;
+    private Company[] companies;
+    private InspectionOrganization[] organizations;
+    private TableType[] tableTypes;
+    private AccountForm accountForm;
 
-    public MainFrame(AccountService accountService) {
+    public MainFrame(AccountService accountService, CompanyService companyService, TableTypeService tableTypeService,
+                     InspectionOrganizationService inspectionOrganizationService) {
         this.accountService = accountService;
+        this.companyService = companyService;
+        this.inspectionOrganizationService = inspectionOrganizationService;
+        this.tableTypeService = tableTypeService;
     }
 
     private void init() {
@@ -49,18 +66,28 @@ public class MainFrame extends JFrame implements ActionListener {
         serviceTableModel = new ServiceTableModel(accountService);
         commonTableModel = csmTableModel;
 
+        companies = companyService.findAll().toArray(new Company[0]);
+        organizations = inspectionOrganizationService.findAll().toArray(new InspectionOrganization[0]);
+        tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
+        accountForm = new AccountForm(commonTableModel, companies, tableTypes, organizations);
+
         int fontSize = Integer.parseInt(System.getProperty("font.size"));
 
         table = new JTable(commonTableModel);
         font = new Font(null, Font.PLAIN, fontSize);
+        table.setRowHeight(fontSize + 5);
+//        JTableHeader tableHeader = new JTableHeader();
+//        tableHeader.setMaximumSize(new Dimension(30, 20));
+//        table.setTableHeader(tableHeader);
         table.setFont(font);
         table.getTableHeader().setFont(font);
+        table.getTableHeader().setMaximumSize(new Dimension(50, 50));
         mainScrollPane = new JScrollPane(table);
 
         popupMenu = new JPopupMenu();
         JMenuItem menuItemAdd = new JMenuItem(ADD_ROW);
         JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
-        JMenuItem menuItemRemoveAll = new JMenuItem(DELETE_ALL_ROWS);
+        JMenuItem menuItemRemoveAll = new JMenuItem(UPDATE_ROW);
         menuItemAdd.addActionListener(this);
         menuItemRemove.addActionListener(this);
         menuItemRemoveAll.addActionListener(this);
@@ -102,37 +129,24 @@ public class MainFrame extends JFrame implements ActionListener {
         serviceLabel.setBounds(181, 11, 46, 14);
         buttonPanel.add(serviceLabel);
 
-//        JLabel testLabel = new JLabel(System.getProperty("font.size"));
-//        testLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-//        testLabel.setBounds(400, 20, 100, 14);
-//        buttonPanel.add(testLabel);
-
-//        JButton testButton = new JButton("change propertie");
-//        testButton.setBounds(600, 20, 100, 50);
-//        testButton.addActionListener(e -> {
-//            changeProperty();
-//        });
-//        buttonPanel.add(testButton);
-
-        JComboBox<String> serviceComboBox = new JComboBox<>();
-        serviceComboBox.setModel(new DefaultComboBoxModel<>(TABLE_TYPES));
+        JComboBox<TableType> serviceComboBox = new JComboBox<>(tableTypes);
         serviceComboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
         serviceComboBox.setBounds(181, 36, 125, 22);
         serviceComboBox.addActionListener(e -> {
-            String serviceType = (String) serviceComboBox.getSelectedItem();
+            String serviceType = ((TableType) serviceComboBox.getSelectedItem()).getTableType();
             if (serviceType != null) {
                 switch (serviceType) {
                     case "ЧЦСМ":
-                        resetTableModel(csmTableModel);
+                        resetTableModel(csmTableModel, fontSize);
                         break;
                     case "УНИИМ":
-                        resetTableModel(uniimTableModel);
+                        resetTableModel(uniimTableModel, fontSize);
                         break;
                     case "другие":
-                        resetTableModel(otherTableModel);
+                        resetTableModel(otherTableModel, fontSize);
                         break;
                     case "прочие услуги":
-                        resetTableModel(serviceTableModel);
+                        resetTableModel(serviceTableModel, fontSize);
                         break;
                     default:
                         throw new IllegalArgumentException("Нет такой модели таблицы");
@@ -163,19 +177,24 @@ public class MainFrame extends JFrame implements ActionListener {
             case DELETE_ROW:
                 deleteRow();
                 break;
+            case UPDATE_ROW:
+                updateRow();
+                break;
             default:
                 JOptionPane.showMessageDialog(this, String.format("Ошибка при выборе меню [%s]", menuItem.getText()),
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void resetTableModel(CommonTableModel tableModel) {
+    private void resetTableModel(CommonTableModel tableModel, int fontSize) {
         this.remove(mainScrollPane);
         this.commonTableModel = tableModel;
         table = new JTable(commonTableModel);
         table.setComponentPopupMenu(popupMenu);
         table.setFont(font);
+        table.setRowHeight(fontSize + 5);
         table.getTableHeader().setFont(font);
+//        table.getTableHeader().se
         table.addMouseListener(new TableMouseListener(table));
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);
@@ -187,7 +206,8 @@ public class MainFrame extends JFrame implements ActionListener {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 //            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-            SwingUtilities.invokeLater(() -> new MainFrame(accountService).init());
+            SwingUtilities.invokeLater(() -> new MainFrame(accountService, companyService,
+                    tableTypeService, inspectionOrganizationService).init());
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Критическая ошибка отображения формы\nОбратитесь в поддержку",
@@ -197,7 +217,7 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void addNewRow() {
-        new AccountForm(commonTableModel);
+        accountForm.showNewForm();
     }
 
     private void deleteRow() {
@@ -207,6 +227,14 @@ public class MainFrame extends JFrame implements ActionListener {
         commonTableModel.deleteRow(accountNumber, date);
         this.revalidate();
         this.repaint();
+    }
+
+    private void updateRow() {
+        int rowNumber = table.getSelectedRow();
+        String accountNumber = (String) table.getValueAt(rowNumber, 0);
+        LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
+        Account account = commonTableModel.findAccount(accountNumber, date);
+        accountForm.showExistForm(account);
     }
 
     private void changeProperty() {

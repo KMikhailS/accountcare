@@ -3,12 +3,17 @@ package ru.kmikhails.accountcare.view;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import ru.kmikhails.accountcare.entity.Account;
+import ru.kmikhails.accountcare.entity.Company;
+import ru.kmikhails.accountcare.entity.InspectionOrganization;
+import ru.kmikhails.accountcare.entity.TableType;
+import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.view.tablemodel.CommonTableModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.Locale;
 
 public class AccountForm extends JFrame {
@@ -33,13 +38,13 @@ public class AccountForm extends JFrame {
     private JTextField accountNumberTextField;
     private JLabel dateLabel;
     private JLabel companyLabel;
-    private JComboBox<String> companyBox;
+    private JComboBox<Company> companyBox;
     private JLabel amountLabel;
     private JTextField amountTextField;
     private JLabel amountWithNDSLabel;
     private JTextField amountWithNDSField;
     private JLabel inspectionOrganizationLabel;
-    private JComboBox<String> inspectionOrganizationBox;
+    private JComboBox<InspectionOrganization> inspectionOrganizationBox;
     private JLabel instrumentsLabel;
     private JTextArea instrumentsTextArea;
     private JLabel invoiceNumberLabel;
@@ -49,7 +54,7 @@ public class AccountForm extends JFrame {
     private JLabel serviceTypeLabel;
     private JTextArea serviceTypeTextArea;
     private JLabel tableTypeLabel;
-    private JComboBox<String> tableTypeBox;
+    private JComboBox<TableType> tableTypeBox;
     private DatePicker accountDatePicker;
     private DatePicker invoiceDatePicker;
     private DatePicker deliveryToAccountingDatePicker;
@@ -62,19 +67,26 @@ public class AccountForm extends JFrame {
     private JLabel chooserLabel;
     private JButton saveButton;
 
-    private CommonTableModel tableModel;
+    private final CommonTableModel tableModel;
+    private final Company[] companies;
+    private final InspectionOrganization[] organizations;
+    private final TableType[] tableTypes;
 
-    public AccountForm(CommonTableModel tableModel) {
+    public AccountForm(CommonTableModel tableModel, Company[] companies, TableType[] tableTypes,
+                       InspectionOrganization[] organizations) {
         this.tableModel = tableModel;
+        this.companies = companies;
+        this.organizations = organizations;
+        this.tableTypes = tableTypes;
         init();
     }
 
-    public AccountForm() {
-        init();
-    }
+//    public AccountForm() {
+//        init();
+//    }
 
 
-    private void init() {
+    public void init() {
         this.setLayout(new GridBagLayout());
         this.setSize(FORM_SIZE);
         this.setResizable(false);
@@ -86,11 +98,6 @@ public class AccountForm extends JFrame {
 
         constraints.anchor = GridBagConstraints.LINE_START;
         constraints.insets = STANDARD_INSET;
-
-//        headLabel = new JLabel("Форма счёта");
-//        constraints.gridx = 0;
-//        constraints.gridy = 0;
-//        contentPane.add(headLabel, constraints);
 
         accountNumberLabel = new JLabel("Номер счёта");
         accountNumberLabel.setFont(FONT);
@@ -128,8 +135,7 @@ public class AccountForm extends JFrame {
 
         companyLabel = new JLabel("Предприятие");
         companyLabel.setFont(FONT);
-        companyBox = new JComboBox<>();
-        companyBox.setModel(new DefaultComboBoxModel<>(COMPANIES));
+        companyBox = new JComboBox<>(companies);
         companyBox.setFont(FONT);
         constraints.insets = LEFT_INSET;
         constraints.gridx = 2;
@@ -141,8 +147,7 @@ public class AccountForm extends JFrame {
 
         inspectionOrganizationLabel = new JLabel("Проверяющая организация");
         inspectionOrganizationLabel.setFont(FONT);
-        inspectionOrganizationBox = new JComboBox<>();
-        inspectionOrganizationBox.setModel(new DefaultComboBoxModel<>(INSPECTION_ORGANIZATIONS));
+        inspectionOrganizationBox = new JComboBox<>(organizations);
         inspectionOrganizationBox.setFont(FONT);
         constraints.insets = STANDARD_INSET;
         constraints.gridx = 0;
@@ -169,7 +174,7 @@ public class AccountForm extends JFrame {
 
         tableTypeLabel = new JLabel("Тип таблицы");
         tableTypeLabel.setFont(FONT);
-        tableTypeBox = new JComboBox<>(TABLE_TYPES);
+        tableTypeBox = new JComboBox<>(tableTypes);
         tableTypeBox.setFont(FONT);
         constraints.insets = LEFT_INSET;
         constraints.gridx = 2;
@@ -323,24 +328,38 @@ public class AccountForm extends JFrame {
         saveButton = new JButton("Сохранить");
         saveButton.setFont(FONT);
         saveButton.addActionListener(e -> {
-            Account account = Account.builder()
-                    .withAccountNumber(accountNumberTextField.getText())
-                    .withAccountDate(accountDatePicker.getDate())
-//                    .withInspectionOrganization((String) inspectionOrganizationComboBox.getSelectedItem())
-//                    .withCompany((String) companyComboBox.getSelectedItem())
-                    .withInvoiceDate(invoiceDatePicker.getDate())
-                    .withDeliveryToAccountingDate(deliveryToAccountingDatePicker.getDate())
-//                    .withServiceType(serviceTypeTextField.getText())
-                    .withAmount(amountTextField.getText())
-                    .withAmountWithDNS(amountWithNDSField.getText())
-//                    .withInstruments(instumentsTextArea.getText())
-                    .withInvoiceNumber(invoiceNumberTextField.getText())
-                    .withNotes(notesTextArea.getText())
-                    .build();
+            try {
+                Account account;
+                if (accountNumberTextField.getText() != null) {
+                    Account existAccount = tableModel.findAccount(accountNumberTextField.getText(), accountDatePicker.getDate());
+                    account = builtAccount(existAccount.getId(), accountNumberTextField.getText(), accountDatePicker.getDate(),
+                            ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
+                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
+                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
+                            serviceTypeTextArea.getText(), ((TableType) tableTypeBox.getSelectedItem()).getId(),
+                            ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
+                            amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
+                            invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
+                            chooserTextField.getText());
+                    tableModel.update(account);
+                } else {
+                    account = builtAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
+                            ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
+                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
+                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
+                            serviceTypeTextArea.getText(), ((TableType) tableTypeBox.getSelectedItem()).getId(),
+                            ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
+                            amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
+                            invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
+                            chooserTextField.getText());
+                    tableModel.addRow(account);
+                }
 
-
-            tableModel.addRow(account);
-            this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+            } catch (AccountException ex) {
+                JOptionPane.showMessageDialog(this, ex.getMessage(),
+                        "Ошибка", JOptionPane.ERROR_MESSAGE);
+            }
         });
         constraints.gridx = 0;
         constraints.gridy = 11;
@@ -349,24 +368,87 @@ public class AccountForm extends JFrame {
         contentPane.add(saveButton, constraints);
 
 
-        this.setVisible(true);
+//        this.setVisible(true);
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 //        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-    public static void main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            SwingUtilities.invokeLater(() -> new AccountForm());
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
+    private Account builtAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
+                                 Long inspectionOrganizationId, String inspectionOrganization, String serviceType,
+                                 Long tableTypeId, String tableType, String amount, String amountWithNDS,
+                                 String instruments, String invoiceNumber, LocalDate invoiceDate,
+                                 LocalDate deliveryToAccountingDate, String notes, String accountFile) {
+        return Account.builder()
+                .withId(id)
+                .withAccountNumber(accountNumber)
+                .withAccountDate(accountDate)
+                .withCompany(Company.builder()
+                        .withId(companyId)
+                        .withCompany(company)
+                        .build())
+                .withInspectionOrganization(InspectionOrganization.builder()
+                        .withId(inspectionOrganizationId)
+                        .withInspectionOrganization(inspectionOrganization)
+                        .build())
+                .withServiceType(serviceType)
+                .withTableType(TableType.builder()
+                        .withId(tableTypeId)
+                        .withTableType(tableType)
+                        .build())
+                .withAmount(amount)
+                .withAmountWithDNS(amountWithNDS)
+                .withInstruments(instruments)
+                .withInvoiceNumber(invoiceNumber)
+                .withInvoiceDate(invoiceDate)
+                .withDeliveryToAccountingDate(deliveryToAccountingDate)
+                .withNotes(notes)
+                .withAccountFile(accountFile)
+                .build();
     }
+
+    public void showNewForm() {
+        accountNumberTextField.setText("");
+        amountTextField.setText("");
+        amountWithNDSField.setText("");
+        instrumentsTextArea.setText("");
+        invoiceNumberTextField.setText("");
+        serviceTypeTextArea.setText("");
+        accountDatePicker.setText("");
+        invoiceDatePicker.setText("");
+        deliveryToAccountingDatePicker.setText("");
+        notesTextArea.setText("");
+        chooserTextField.setText("");
+        this.setVisible(true);
+    }
+
+    public void showExistForm(Account account) {
+        accountNumberTextField.setText(account.getAccountNumber());
+        amountTextField.setText(account.getAmount());
+        amountWithNDSField.setText(account.getAmountWithNDS());
+        instrumentsTextArea.setText(account.getInstruments());
+        invoiceNumberTextField.setText(account.getInvoiceNumber());
+        serviceTypeTextArea.setText(account.getServiceType());
+        accountDatePicker.setDate(account.getAccountDate());
+        invoiceDatePicker.setDate(account.getInvoiceDate());
+        deliveryToAccountingDatePicker.setDate(account.getDeliveryToAccountingDate());
+        notesTextArea.setText(account.getNotes());
+        chooserTextField.setText(account.getAccountFile());
+        this.setVisible(true);
+    }
+
+//    public static void main(String[] args) {
+//        try {
+//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//            SwingUtilities.invokeLater(() -> new AccountForm());
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (InstantiationException e) {
+//            e.printStackTrace();
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        } catch (UnsupportedLookAndFeelException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

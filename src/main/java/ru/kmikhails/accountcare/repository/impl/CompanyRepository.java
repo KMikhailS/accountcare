@@ -64,13 +64,16 @@ public class CompanyRepository extends AbstractCrudRepository<Company> {
     }
 
     @Override
-    public void update(Long id) {
+    public void update(Company company) {
 
     }
 
     @Override
     protected Company mapResultSetToEntity(ResultSet resultSet) throws SQLException {
-        return Company.builder().withCompany(resultSet.getString("company")).build();
+        return Company.builder()
+                .withId(resultSet.getLong("company_id"))
+                .withCompany(resultSet.getString("company"))
+                .build();
     }
 
     @Override

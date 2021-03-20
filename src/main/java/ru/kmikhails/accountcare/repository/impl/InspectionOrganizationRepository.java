@@ -65,13 +65,14 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
     }
 
     @Override
-    public void update(Long id) {
+    public void update(InspectionOrganization inspectionOrganization) {
 
     }
 
     @Override
     protected InspectionOrganization mapResultSetToEntity(ResultSet resultSet) throws SQLException {
         return InspectionOrganization.builder()
+                .withId(resultSet.getLong("inspection_organization_id"))
                 .withInspectionOrganization(resultSet.getString("inspection_organization"))
                 .build();
     }

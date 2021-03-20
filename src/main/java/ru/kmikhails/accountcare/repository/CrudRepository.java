@@ -17,5 +17,5 @@ public interface CrudRepository<E> {
 
 	List<E> findAllByTableType(String tableType);
 
-	void update(Long id);
+	void update(E e);
 }
