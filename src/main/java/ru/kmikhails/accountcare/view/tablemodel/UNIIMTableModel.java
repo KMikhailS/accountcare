@@ -93,7 +93,7 @@ public class UNIIMTableModel extends CommonTableModel {
                 .filter(acc -> acc.getStatus().equals("NEW"))
                 .findFirst()
                 .ifPresent(account -> accountService.deleteById(account.getId()));
-        accounts = accountService.findAllByTableType("УНИИМ");
+//        accounts = accountService.findAllByTableType("УНИИМ");
         this.fireTableDataChanged();
     }
 

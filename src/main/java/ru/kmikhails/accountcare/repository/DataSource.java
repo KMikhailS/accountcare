@@ -16,6 +16,7 @@ public class DataSource {
         config.setJdbcUrl(resource.getString("db.url"));
         config.setUsername(resource.getString("db.username"));
         config.setPassword(resource.getString("db.password"));
+        config.setMaximumPoolSize(Integer.parseInt(resource.getString("db.poolsize")));
         dataSource = new HikariDataSource(config);
     }
 

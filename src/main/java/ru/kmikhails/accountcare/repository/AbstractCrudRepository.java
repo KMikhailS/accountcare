@@ -47,7 +47,8 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
     }
 
     protected <P> void deleteByParam(P param, String deleteByParam, BiConsumer<PreparedStatement, P> designatedParamSetter) {
-        try (final PreparedStatement statement = dataSource.getConnection().prepareStatement(deleteByParam)) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(deleteByParam)) {
 
             designatedParamSetter.accept(statement, param);
             if (statement.executeUpdate() == 0) {
@@ -61,7 +62,8 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
     }
 
     protected <P> Optional<E> findByParam(P param, String findByParam, BiConsumer<PreparedStatement, P> designatedParamSetter) {
-        try (final PreparedStatement statement = dataSource.getConnection().prepareStatement(findByParam)) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(findByParam)) {
 
             designatedParamSetter.accept(statement, param);
 
@@ -80,7 +82,8 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
     }
 
     protected <P> List<E> findAllByStringParam(P param, String findByParam, BiConsumer<PreparedStatement, P> designatedParamSetter) {
-        try (final PreparedStatement statement = dataSource.getConnection().prepareStatement(findByParam)) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(findByParam)) {
 
             designatedParamSetter.accept(statement, param);
 
@@ -99,7 +102,8 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
     }
 
     public List<E> findAll(String findAllQuery) {
-        try (final PreparedStatement statement = dataSource.getConnection().prepareStatement(findAllQuery)) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(findAllQuery)) {
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 List<E> entities = new ArrayList<>();

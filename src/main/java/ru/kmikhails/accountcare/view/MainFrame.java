@@ -225,8 +225,6 @@ public class MainFrame extends JFrame implements ActionListener {
         String accountNumber = (String) table.getValueAt(rowNumber, 0);
         LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
         commonTableModel.deleteRow(accountNumber, date);
-        this.revalidate();
-        this.repaint();
     }
 
     private void updateRow() {

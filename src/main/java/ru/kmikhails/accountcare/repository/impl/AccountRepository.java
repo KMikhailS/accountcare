@@ -57,8 +57,8 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     @Override
     public Optional<Account> save(Account account) {
         try (final Connection connection = dataSource.getConnection();
-             PreparedStatement addStatement = connection.prepareStatement(ADD_QUERY);
-             PreparedStatement findStatement = connection.prepareStatement(FIND_BY_ACCOUNT_NUMBER_AND_COMPANY)) {
+             final PreparedStatement addStatement = connection.prepareStatement(ADD_QUERY);
+             final PreparedStatement findStatement = connection.prepareStatement(FIND_BY_ACCOUNT_NUMBER_AND_COMPANY)) {
             try {
                 connection.setAutoCommit(false);
 
@@ -105,7 +105,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     @Override
     public void update(Account account) {
         try (final Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(UPDATE)) {
+             final PreparedStatement statement = connection.prepareStatement(UPDATE)) {
 
             insert(statement, account);
             statement.setLong(15, account.getId());
@@ -118,7 +118,8 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     }
 
     public Optional<Account> findByAccountNumberAndCompany(String accountNumber, long companyId) {
-        try (final PreparedStatement statement = dataSource.getConnection().prepareStatement(FIND_BY_ACCOUNT_NUMBER_AND_COMPANY)) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(FIND_BY_ACCOUNT_NUMBER_AND_COMPANY)) {
 
             statement.setString(1, accountNumber);
             statement.setLong(2, companyId);
