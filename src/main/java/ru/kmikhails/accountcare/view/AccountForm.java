@@ -7,17 +7,13 @@ import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
 import ru.kmikhails.accountcare.entity.TableType;
 import ru.kmikhails.accountcare.exception.AccountException;
-import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.tablemodel.CommonTableModel;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowEvent;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Locale;
-
-import static ru.kmikhails.accountcare.util.StringUtils.*;
 
 public class AccountForm extends JFrame {
 
@@ -69,6 +65,7 @@ public class AccountForm extends JFrame {
     private JFileChooser fileChooser;
     private JLabel chooserLabel;
     private JButton saveButton;
+    private JButton cancelButton;
 
     private CommonTableModel tableModel;
     private final Company[] companies;
@@ -84,10 +81,6 @@ public class AccountForm extends JFrame {
         init();
     }
 
-//    public AccountForm() {
-//        init();
-//    }
-
     public void setTableMode(CommonTableModel tableModel) {
         this.tableModel = tableModel;
     }
@@ -98,7 +91,6 @@ public class AccountForm extends JFrame {
         this.setResizable(false);
         contentPane = new JPanel(new GridBagLayout());
         this.getContentPane().add(contentPane);
-//        Font FONT = new Font(null, Font.PLAIN, 14);
 
         GridBagConstraints constraints = new GridBagConstraints();
 
@@ -375,14 +367,21 @@ public class AccountForm extends JFrame {
         constraints.gridx = 0;
         constraints.gridy = 11;
         constraints.gridwidth = 3;
-        constraints.insets = new Insets(50, 0, 0, 0);
+        constraints.insets = new Insets(50, 0, 0, 50);
         contentPane.add(saveButton, constraints);
 
+        cancelButton = new JButton("Отмена");
+        cancelButton.setFont(FONT);
+        cancelButton.addActionListener(e -> this.dispose());
+        constraints.gridx = 1;
+        constraints.gridy = 11;
+        constraints.gridwidth = 3;
+        constraints.insets = new Insets(50, 25, 0, 0);
+        contentPane.add(cancelButton, constraints);
 
-//        this.setVisible(true);
+
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-//        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     private Account builtAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
@@ -463,19 +462,4 @@ public class AccountForm extends JFrame {
         chooserTextField.setText(account.getAccountFile());
         this.setVisible(true);
     }
-
-//    public static void main(String[] args) {
-//        try {
-//            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-//            SwingUtilities.invokeLater(() -> new AccountForm());
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (InstantiationException e) {
-//            e.printStackTrace();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (UnsupportedLookAndFeelException e) {
-//            e.printStackTrace();
-//        }
-//    }
 }

@@ -8,11 +8,11 @@ import java.sql.SQLException;
 import java.util.ResourceBundle;
 
 public class DataSource {
-    private final HikariConfig config = new HikariConfig();
     private final HikariDataSource dataSource;
 
     public DataSource(String filename) {
         ResourceBundle resource = ResourceBundle.getBundle(filename);
+        HikariConfig config = new HikariConfig();
         config.setJdbcUrl(resource.getString("db.url"));
         config.setUsername(resource.getString("db.username"));
         config.setPassword(resource.getString("db.password"));

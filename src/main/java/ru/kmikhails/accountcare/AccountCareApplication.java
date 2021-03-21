@@ -35,7 +35,6 @@ public class AccountCareApplication {
 		String propFilename = "application";
 		DataSource dataSource = new DataSource(propFilename);
 		Validator<Account> validator = new AccountValidator();
-//		CrudRepository<Account> mockRepository = new MockAccountRepository();
 		CrudRepository<Account> accountRepository = new AccountRepository(dataSource);
 		CrudRepository<Company> companyRepository = new CompanyRepository(dataSource);
 		CrudRepository<InspectionOrganization> inspectionOrganizationRepository = new InspectionOrganizationRepository(dataSource);

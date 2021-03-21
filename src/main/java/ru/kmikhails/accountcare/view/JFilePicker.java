@@ -19,15 +19,12 @@ public class JFilePicker extends JPanel {
 	public static final int MODE_SAVE = 2;
 
 	public JFilePicker(Font font, String buttonLabel) {
-//		this.textFieldLabel = textFieldLabel;
 		this.buttonLabel = buttonLabel;
 		this.font = font;
 
 		fileChooser = new JFileChooser();
 
 		setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
-//		label = new JLabel(textFieldLabel);
 
 		textField = new JTextField(30);
 		textField.setFont(font);
@@ -36,7 +33,6 @@ public class JFilePicker extends JPanel {
 
 		button.addActionListener(e -> buttonActionPerformed());
 
-//		add(label);
 		add(textField);
 		add(button);
 	}
@@ -52,11 +48,6 @@ public class JFilePicker extends JPanel {
 			}
 		}
 	}
-
-//	public void addFileTypeFilter(String extension, String description) {
-//		FileTypeFilter fileTypeFilter = new FileTypeFilter(extension, description);
-//		fileChooser.addChoosableFileFilter(fileTypeFilter);
-//	}
 
 	public void setMode(int mode) {
 		this.mode = mode;

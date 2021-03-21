@@ -63,7 +63,6 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void init() {
-//        mainPanel = new JPanel();
         csmTableModel = new CSMTableModel(accountService);
         uniimTableModel = new UNIIMTableModel(accountService);
         otherTableModel = new OtherTableModel(accountService);
@@ -80,9 +79,6 @@ public class MainFrame extends JFrame implements ActionListener {
         table = new JTable(commonTableModel);
         font = new Font(null, Font.PLAIN, fontSize);
         table.setRowHeight(fontSize + 5);
-//        JTableHeader tableHeader = new JTableHeader();
-//        tableHeader.setMaximumSize(new Dimension(30, 20));
-//        table.setTableHeader(tableHeader);
         table.setFont(font);
         table.getTableHeader().setFont(font);
         table.getTableHeader().setMaximumSize(new Dimension(50, 50));
@@ -271,13 +267,6 @@ public class MainFrame extends JFrame implements ActionListener {
         String tableTypeName = commonTableModel.getTableTypeName();
 
         return tableTypeService.findByName(tableTypeName);
-    }
-
-    private void updateTable() {
-        csmTableModel.updateTable();
-        uniimTableModel.updateTable();
-        otherTableModel.updateTable();
-        serviceTableModel.updateTable();
     }
 
     private void changeProperty() {
