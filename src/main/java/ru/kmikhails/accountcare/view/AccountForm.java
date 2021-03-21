@@ -7,6 +7,7 @@ import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
 import ru.kmikhails.accountcare.entity.TableType;
 import ru.kmikhails.accountcare.exception.AccountException;
+import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.tablemodel.CommonTableModel;
 
 import javax.swing.*;
@@ -15,6 +16,8 @@ import java.awt.event.WindowEvent;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Locale;
+
+import static ru.kmikhails.accountcare.util.StringUtils.*;
 
 public class AccountForm extends JFrame {
 
@@ -67,7 +70,7 @@ public class AccountForm extends JFrame {
     private JLabel chooserLabel;
     private JButton saveButton;
 
-    private final CommonTableModel tableModel;
+    private CommonTableModel tableModel;
     private final Company[] companies;
     private final InspectionOrganization[] organizations;
     private final TableType[] tableTypes;
@@ -85,6 +88,9 @@ public class AccountForm extends JFrame {
 //        init();
 //    }
 
+    public void setTableMode(CommonTableModel tableModel) {
+        this.tableModel = tableModel;
+    }
 
     public void init() {
         this.setLayout(new GridBagLayout());
@@ -330,33 +336,38 @@ public class AccountForm extends JFrame {
         saveButton.addActionListener(e -> {
             try {
                 Account account;
-                if (accountNumberTextField.getText() != null) {
+                if (accountNumberTextField.getText() != null && accountDatePicker.getDate() != null) {
                     Account existAccount = tableModel.findAccount(accountNumberTextField.getText(), accountDatePicker.getDate());
-                    account = builtAccount(existAccount.getId(), accountNumberTextField.getText(), accountDatePicker.getDate(),
-                            ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
-                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
-                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
-                            serviceTypeTextArea.getText(), ((TableType) tableTypeBox.getSelectedItem()).getId(),
-                            ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
-                            amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
-                            invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                            chooserTextField.getText());
-                    tableModel.update(account);
+                    if (existAccount != null && "NEW".equals(existAccount.getStatus())) {
+                        account = builtAccount(existAccount.getId(), accountNumberTextField.getText(), accountDatePicker.getDate(),
+                                ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
+                                ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
+                                ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
+                                serviceTypeTextArea.getText(), ((TableType) tableTypeBox.getSelectedItem()).getId(),
+                                ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
+                                amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
+                                invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
+                                chooserTextField.getText());
+                        tableModel.update(account);
+                    } else {
+                        account = builtAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
+                                ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
+                                ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
+                                ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
+                                serviceTypeTextArea.getText(), ((TableType) tableTypeBox.getSelectedItem()).getId(),
+                                ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
+                                amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
+                                invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
+                                chooserTextField.getText());
+                        tableModel.addRow(account);
+                    }
                 } else {
-                    account = builtAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
-                            ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
-                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
-                            ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
-                            serviceTypeTextArea.getText(), ((TableType) tableTypeBox.getSelectedItem()).getId(),
-                            ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
-                            amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
-                            invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                            chooserTextField.getText());
-                    tableModel.addRow(account);
+                    throw new AccountException("Номер счёта и дата не должны быть пустыми");
                 }
 
-                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
-            } catch (AccountException ex) {
+//                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+                this.dispose();
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
             }
@@ -407,7 +418,7 @@ public class AccountForm extends JFrame {
                 .build();
     }
 
-    public void showNewForm() {
+    public void showNewForm(TableType tableType) {
         accountNumberTextField.setText("");
         amountTextField.setText("");
         amountWithNDSField.setText("");
@@ -419,11 +430,27 @@ public class AccountForm extends JFrame {
         deliveryToAccountingDatePicker.setText("");
         notesTextArea.setText("");
         chooserTextField.setText("");
+        tableTypeBox.setSelectedItem(TableType.builder()
+                .withId(tableType.getId())
+                .withTableType(tableType.getTableType())
+                .build());
         this.setVisible(true);
     }
 
     public void showExistForm(Account account) {
         accountNumberTextField.setText(account.getAccountNumber());
+        companyBox.setSelectedItem(Company.builder()
+                .withId(account.getCompany().getId())
+                .withCompany(account.getCompany().getCompany())
+                .build());
+        inspectionOrganizationBox.setSelectedItem(InspectionOrganization.builder()
+                .withId(account.getInspectionOrganization().getId())
+                .withInspectionOrganization(account.getInspectionOrganization().getInspectionOrganization())
+                .build());
+        tableTypeBox.setSelectedItem(TableType.builder()
+                .withId(account.getTableType().getId())
+                .withTableType(account.getTableType().getTableType())
+                .build());
         amountTextField.setText(account.getAmount());
         amountWithNDSField.setText(account.getAmountWithNDS());
         instrumentsTextArea.setText(account.getInstruments());

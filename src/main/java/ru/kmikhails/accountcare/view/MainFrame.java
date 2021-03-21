@@ -4,10 +4,13 @@ import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
 import ru.kmikhails.accountcare.entity.TableType;
+import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.service.impl.CompanyService;
 import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
 import ru.kmikhails.accountcare.service.impl.TableTypeService;
+import ru.kmikhails.accountcare.util.PdfRunner;
+import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.tablemodel.*;
 
 import javax.swing.*;
@@ -26,6 +29,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private static final String ADD_ROW = "Добавить счёт";
     private static final String DELETE_ROW = "Удалить счёт";
     private static final String UPDATE_ROW = "Обновить счёт";
+    private static final String SHOW_SCAN = "Показать скан";
     private static final String MENU = "Меню";
     private static final String[] TABLE_TYPES = new String[]{"ЧЦСМ", "УНИИМ", "другие", "прочие услуги"};
     private static final String[] YEARS = new String[]{"2021"};
@@ -88,12 +92,15 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuItem menuItemAdd = new JMenuItem(ADD_ROW);
         JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
         JMenuItem menuItemRemoveAll = new JMenuItem(UPDATE_ROW);
+        JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
         menuItemAdd.addActionListener(this);
         menuItemRemove.addActionListener(this);
         menuItemRemoveAll.addActionListener(this);
+        menuItemShowScan.addActionListener(this);
         popupMenu.add(menuItemAdd);
         popupMenu.add(menuItemRemove);
         popupMenu.add(menuItemRemoveAll);
+        popupMenu.add(menuItemShowScan);
 
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -180,6 +187,9 @@ public class MainFrame extends JFrame implements ActionListener {
             case UPDATE_ROW:
                 updateRow();
                 break;
+            case SHOW_SCAN:
+                showScan();
+                break;
             default:
                 JOptionPane.showMessageDialog(this, String.format("Ошибка при выборе меню [%s]", menuItem.getText()),
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
@@ -198,6 +208,7 @@ public class MainFrame extends JFrame implements ActionListener {
         table.addMouseListener(new TableMouseListener(table));
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);
+        accountForm.setTableMode(tableModel);
         this.revalidate();
         this.repaint();
     }
@@ -217,7 +228,7 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void addNewRow() {
-        accountForm.showNewForm();
+        accountForm.showNewForm(pickTableType());
     }
 
     private void deleteRow() {
@@ -233,6 +244,40 @@ public class MainFrame extends JFrame implements ActionListener {
         LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
         Account account = commonTableModel.findAccount(accountNumber, date);
         accountForm.showExistForm(account);
+    }
+
+    private void showScan() {
+        try {
+            int rowNumber = table.getSelectedRow();
+            String accountNumber = (String) table.getValueAt(rowNumber, 0);
+            LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
+            Account account = commonTableModel.findAccount(accountNumber, date);
+            String filename = account.getAccountFile();
+            if (StringUtils.isEmpty(filename)) {
+                JOptionPane.showMessageDialog(this, "К этому счёту не приложен скан",
+                        "Внимание", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                PdfRunner pdfRunner = new PdfRunner();
+                pdfRunner.showScan(filename);
+            }
+        } catch (AccountException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);
+        }
+
+    }
+
+    private TableType pickTableType() {
+        String tableTypeName = commonTableModel.getTableTypeName();
+
+        return tableTypeService.findByName(tableTypeName);
+    }
+
+    private void updateTable() {
+        csmTableModel.updateTable();
+        uniimTableModel.updateTable();
+        otherTableModel.updateTable();
+        serviceTableModel.updateTable();
     }
 
     private void changeProperty() {

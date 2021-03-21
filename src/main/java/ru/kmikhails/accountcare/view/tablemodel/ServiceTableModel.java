@@ -91,14 +91,12 @@ public class ServiceTableModel extends CommonTableModel {
 				.filter(acc -> acc.getStatus().equals("NEW"))
 				.findFirst()
 				.ifPresent(account -> accountService.deleteById(account.getId()));
-		accounts = accountService.findAllByTableType("прочие услуги");
-		this.fireTableDataChanged();
+		updateTable();
 	}
 
 	public void addRow(Account account) {
 		accountService.save(account);
-		accounts = accountService.findAllByTableType("прочие услуги");
-		this.fireTableDataChanged();
+		updateTable();
 	}
 
 	public Account findAccount(String accountNumber, LocalDate date) {
@@ -107,12 +105,20 @@ public class ServiceTableModel extends CommonTableModel {
 				.filter(acc -> acc.getAccountDate().equals(date))
 				.filter(acc -> acc.getStatus().equals("NEW"))
 				.findFirst()
-				.orElseThrow(() -> new AccountException(""));
+				.orElse(null);
 	}
 
 	public void update(Account account) {
 		accountService.update(account);
-		accounts = accountService.findAllByTableType("ЧЦСМ");
+		updateTable();
+	}
+
+	public void updateTable() {
+		accounts = accountService.findAllByTableType("прочие услуги");
 		this.fireTableDataChanged();
+	}
+
+	public String getTableTypeName() {
+		return "прочие услуги";
 	}
 }

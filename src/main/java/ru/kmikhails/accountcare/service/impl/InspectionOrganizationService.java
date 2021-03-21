@@ -37,4 +37,9 @@ public class InspectionOrganizationService implements Service<InspectionOrganiza
     public void update(InspectionOrganization inspectionOrganization) {
 
     }
+
+    @Override
+    public InspectionOrganization findByName(String name) {
+        return null;
+    }
 }

@@ -18,4 +18,6 @@ public interface CrudRepository<E> {
 	List<E> findAllByTableType(String tableType);
 
 	void update(E e);
+
+	Optional<E> findByName(String name);
 }

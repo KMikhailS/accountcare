@@ -13,4 +13,6 @@ public interface Service<E> {
     List<E> findAll();
 
     void update(E e);
+
+    E findByName(String name);
 }

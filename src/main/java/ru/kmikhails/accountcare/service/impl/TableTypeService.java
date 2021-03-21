@@ -1,6 +1,7 @@
 package ru.kmikhails.accountcare.service.impl;
 
 import ru.kmikhails.accountcare.entity.TableType;
+import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.repository.CrudRepository;
 import ru.kmikhails.accountcare.service.Service;
 
@@ -36,5 +37,11 @@ public class TableTypeService implements Service<TableType> {
     @Override
     public void update(TableType tableType) {
 
+    }
+
+    @Override
+    public TableType findByName(String name) {
+        return tableTypeRepository.findByName(name).orElseThrow(
+                () -> new AccountException(String.format("Не могу найти тип таблицы с именем [%s]", name)));
     }
 }

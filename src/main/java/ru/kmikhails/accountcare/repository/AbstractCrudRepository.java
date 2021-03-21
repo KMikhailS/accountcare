@@ -34,11 +34,13 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
     protected final DataSource dataSource;
     protected final String saveQuery;
     protected final String findByIdQuery;
+    protected final String findByNameQuery;
 
-    protected AbstractCrudRepository(DataSource dataSource, String saveQuery, String findByIdQuery) {
+    protected AbstractCrudRepository(DataSource dataSource, String saveQuery, String findByIdQuery, String findByNameQuery) {
         this.dataSource = dataSource;
         this.saveQuery = saveQuery;
         this.findByIdQuery = findByIdQuery;
+        this.findByNameQuery = findByNameQuery;
     }
 
     @Override
@@ -117,6 +119,11 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
 //			LOG.error(e);
             throw new DataBaseException(e);
         }
+    }
+
+    @Override
+    public Optional<E> findByName(String name) {
+        return findByParam(name, findByNameQuery, STRING_PARAM_SETTER);
     }
 
     protected abstract E mapResultSetToEntity(ResultSet resultSet) throws SQLException;

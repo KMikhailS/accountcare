@@ -2,7 +2,6 @@ package ru.kmikhails.accountcare.service.impl;
 
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.repository.CrudRepository;
-import ru.kmikhails.accountcare.repository.impl.CompanyRepository;
 import ru.kmikhails.accountcare.service.Service;
 
 import java.util.List;
@@ -37,5 +36,10 @@ public class CompanyService implements Service<Company> {
     @Override
     public void update(Company company) {
 
+    }
+
+    @Override
+    public Company findByName(String name) {
+        return null;
     }
 }

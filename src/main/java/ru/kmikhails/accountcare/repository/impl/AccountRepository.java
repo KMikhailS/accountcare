@@ -49,9 +49,10 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
             "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
             "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
             "table_type_id = ? WHERE account_id = ?";
+    private static final String FIND_BY_NAME_QUERY = "";
 
     public AccountRepository(DataSource dataSource) {
-        super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY);
+        super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY, FIND_BY_NAME_QUERY);
     }
 
     @Override

@@ -95,14 +95,12 @@ public class CSMTableModel extends CommonTableModel {
 				.filter(acc -> acc.getStatus().equals("NEW"))
 				.findFirst()
 				.ifPresent(account -> accountService.deleteById(account.getId()));
-		accounts = accountService.findAllByTableType("ЧЦСМ");
-		this.fireTableDataChanged();
+		updateTable();
 	}
 
 	public void addRow(Account account) {
 		accountService.save(account);
-		accounts = accountService.findAllByTableType("ЧЦСМ");
-		this.fireTableDataChanged();
+		updateTable();
 	}
 
 	public Account findAccount(String accountNumber, LocalDate date) {
@@ -111,12 +109,20 @@ public class CSMTableModel extends CommonTableModel {
 				.filter(acc -> acc.getAccountDate().equals(date))
 				.filter(acc -> acc.getStatus().equals("NEW"))
 				.findFirst()
-				.orElseThrow(() -> new AccountException(""));
+				.orElse(null);
 	}
 
 	public void update(Account account) {
 		accountService.update(account);
+		updateTable();
+	}
+
+	public void updateTable() {
 		accounts = accountService.findAllByTableType("ЧЦСМ");
 		this.fireTableDataChanged();
+	}
+
+	public String getTableTypeName() {
+		return "ЧЦСМ";
 	}
 }

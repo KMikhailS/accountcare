@@ -93,14 +93,12 @@ public class UNIIMTableModel extends CommonTableModel {
                 .filter(acc -> acc.getStatus().equals("NEW"))
                 .findFirst()
                 .ifPresent(account -> accountService.deleteById(account.getId()));
-//        accounts = accountService.findAllByTableType("УНИИМ");
-        this.fireTableDataChanged();
+        updateTable();
     }
 
     public void addRow(Account account) {
         accountService.save(account);
-        accounts = accountService.findAllByTableType("УНИИМ");
-        this.fireTableDataChanged();
+        updateTable();
     }
 
     public Account findAccount(String accountNumber, LocalDate date) {
@@ -109,12 +107,20 @@ public class UNIIMTableModel extends CommonTableModel {
                 .filter(acc -> acc.getAccountDate().equals(date))
                 .filter(acc -> acc.getStatus().equals("NEW"))
                 .findFirst()
-                .orElseThrow(() -> new AccountException("Счёта с таким номером и датой не существует"));
+                .orElse(null);
     }
 
     public void update(Account account) {
         accountService.update(account);
-        accounts = accountService.findAllByTableType("ЧЦСМ");
+        updateTable();
+    }
+
+    public void updateTable() {
+        accounts = accountService.findAllByTableType("УНИИМ");
         this.fireTableDataChanged();
+    }
+
+    public String getTableTypeName() {
+        return "УНИИМ";
     }
 }

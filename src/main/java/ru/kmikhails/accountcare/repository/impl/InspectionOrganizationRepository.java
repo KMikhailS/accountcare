@@ -21,7 +21,7 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
 
 
     public InspectionOrganizationRepository(DataSource dataSource) {
-        super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY);
+        super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY, FIND_BY_NAME_QUERY);
     }
 
     @Override
