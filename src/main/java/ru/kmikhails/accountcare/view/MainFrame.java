@@ -24,20 +24,22 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ResourceBundle;
 
 public class MainFrame extends JFrame implements ActionListener {
     private static final String ADD_ROW = "Добавить счёт";
     private static final String DELETE_ROW = "Удалить счёт";
     private static final String UPDATE_ROW = "Обновить счёт";
     private static final String SHOW_SCAN = "Показать скан";
+    private static final String UPDATE_TABLE = "Обновить таблицу";
     private static final String MENU = "Меню";
-    private static final String[] TABLE_TYPES = new String[]{"ЧЦСМ", "УНИИМ", "другие", "прочие услуги"};
     private static final String[] YEARS = new String[]{"2021"};
 
     private final AccountService accountService;
     private final CompanyService companyService;
     private final InspectionOrganizationService inspectionOrganizationService;
     private final TableTypeService tableTypeService;
+    private final ResourceBundle resource;
 
     private CSMTableModel csmTableModel;
     private UNIIMTableModel uniimTableModel;
@@ -54,8 +56,9 @@ public class MainFrame extends JFrame implements ActionListener {
     private TableType[] tableTypes;
     private AccountForm accountForm;
 
-    public MainFrame(AccountService accountService, CompanyService companyService, TableTypeService tableTypeService,
-                     InspectionOrganizationService inspectionOrganizationService) {
+    public MainFrame(ResourceBundle resource, AccountService accountService, CompanyService companyService,
+                     TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService) {
+        this.resource = resource;
         this.accountService = accountService;
         this.companyService = companyService;
         this.inspectionOrganizationService = inspectionOrganizationService;
@@ -74,7 +77,7 @@ public class MainFrame extends JFrame implements ActionListener {
         tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
         accountForm = new AccountForm(commonTableModel, companies, tableTypes, organizations);
 
-        int fontSize = Integer.parseInt(System.getProperty("font.size"));
+        int fontSize = Integer.parseInt(resource.getString("font.size"));
 
         table = new JTable(commonTableModel);
         font = new Font(null, Font.PLAIN, fontSize);
@@ -107,6 +110,10 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuItem addAccountMenuItem = new JMenuItem(ADD_ROW);
         mainMenu.add(addAccountMenuItem);
         addAccountMenuItem.addActionListener(e -> addNewRow());
+
+        JMenuItem updateTableMenuItem = new JMenuItem(UPDATE_TABLE);
+        mainMenu.add(updateTableMenuItem);
+        updateTableMenuItem.addActionListener(e -> updateTable());
 
         table.setComponentPopupMenu(popupMenu);
         table.addMouseListener(new TableMouseListener(table));
@@ -213,7 +220,7 @@ public class MainFrame extends JFrame implements ActionListener {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 //            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-            SwingUtilities.invokeLater(() -> new MainFrame(accountService, companyService,
+            SwingUtilities.invokeLater(() -> new MainFrame(resource, accountService, companyService,
                     tableTypeService, inspectionOrganizationService).init());
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -240,6 +247,13 @@ public class MainFrame extends JFrame implements ActionListener {
         LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
         Account account = commonTableModel.findAccount(accountNumber, date);
         accountForm.showExistForm(account);
+    }
+
+    private void updateTable() {
+        csmTableModel.updateTable();
+        uniimTableModel.updateTable();
+        otherTableModel.updateTable();
+        serviceTableModel.updateTable();
     }
 
     private void showScan() {

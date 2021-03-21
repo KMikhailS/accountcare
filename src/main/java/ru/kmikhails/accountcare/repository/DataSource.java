@@ -10,8 +10,7 @@ import java.util.ResourceBundle;
 public class DataSource {
     private final HikariDataSource dataSource;
 
-    public DataSource(String filename) {
-        ResourceBundle resource = ResourceBundle.getBundle(filename);
+    public DataSource(ResourceBundle resource) {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(resource.getString("db.url"));
         config.setUsername(resource.getString("db.username"));

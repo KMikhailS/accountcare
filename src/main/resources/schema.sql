@@ -25,14 +25,14 @@ CREATE TABLE inspection_organizations
 inspection_organization varchar(255) NOT NULL,
 PRIMARY KEY (inspection_organization_id));
 
-COMMENT ON TABLE inspection_organizations IS 'Inspection organization';
+COMMENT ON TABLE inspection_organizations IS 'Inspection organizations';
 
 CREATE TABLE table_types
 (table_type_id serial NOT NULL,
 table_type varchar(255) NOT NULL,
 PRIMARY KEY (table_type_id));
 
-COMMENT ON TABLE table_types IS 'Typies of table models';
+COMMENT ON TABLE table_types IS 'Types of table models';
 
 CREATE TABLE accounts
 (account_id serial NOT NULL,

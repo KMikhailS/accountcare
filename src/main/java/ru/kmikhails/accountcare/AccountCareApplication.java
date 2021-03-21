@@ -18,22 +18,19 @@ import ru.kmikhails.accountcare.view.MainFrame;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ResourceBundle;
 
 public class AccountCareApplication {
 	public static void main(String[] args) {
-		try (InputStream inputStream = AccountCareApplication.class.getClassLoader().getResourceAsStream("config.properties")) {
-//			Properties properties = new Properties();
-//			properties.load(inputStream);
-
-			System.getProperties().load(inputStream);
-
-//			System.setProperties(properties);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try (InputStream inputStream = AccountCareApplication.class.getClassLoader().getResourceAsStream("config.properties")) {
+//			System.getProperties().load(inputStream);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 
 		String propFilename = "application";
-		DataSource dataSource = new DataSource(propFilename);
+		ResourceBundle resource = ResourceBundle.getBundle(propFilename);
+		DataSource dataSource = new DataSource(resource);
 		Validator<Account> validator = new AccountValidator();
 		CrudRepository<Account> accountRepository = new AccountRepository(dataSource);
 		CrudRepository<Company> companyRepository = new CompanyRepository(dataSource);
@@ -44,7 +41,7 @@ public class AccountCareApplication {
 		InspectionOrganizationService inspectionOrganizationService =
 				new InspectionOrganizationService(inspectionOrganizationRepository);
 		TableTypeService tableTypeService = new TableTypeService(tableTypesRepository);
-		MainFrame mainFrame = new MainFrame(accountService, companyService, tableTypeService, inspectionOrganizationService);
+		MainFrame mainFrame = new MainFrame(resource, accountService, companyService, tableTypeService, inspectionOrganizationService);
 		mainFrame.run();
 	}
 }
