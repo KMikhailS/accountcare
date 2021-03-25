@@ -16,6 +16,8 @@ import ru.kmikhails.accountcare.view.tablemodel.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -25,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -47,6 +50,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private UNIIMTableModel uniimTableModel;
     private OtherTableModel otherTableModel;
     private ServiceTableModel serviceTableModel;
+    private JTextField searchTextField;
     private JPopupMenu popupMenu;
     private Font font;
     private CommonTableModel commonTableModel;
@@ -87,6 +91,7 @@ public class MainFrame extends JFrame implements ActionListener {
         table.setFont(font);
         table.getTableHeader().setFont(font);
         table.getTableHeader().setMaximumSize(new Dimension(50, 50));
+        sortTable();
         mainScrollPane = new JScrollPane(table);
 
         popupMenu = new JPopupMenu();
@@ -146,9 +151,16 @@ public class MainFrame extends JFrame implements ActionListener {
         searchLabel.setBounds(380, 36, 75, fontSize + 5);
         buttonPanel.add(searchLabel);
 
-        JTextField searchTextField = new JTextField();
+//        Icon icon = new ImageIcon("src/main/resources/icons/cross.jpg");
+        JButton searchCancelButton = new JButton();
+        searchCancelButton.addActionListener(e -> searchTextField.setText(""));
+        searchLabel.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        searchCancelButton.setBounds(652, 36, 30, fontSize + 8);
+        buttonPanel.add(searchCancelButton);
+
+        searchTextField = new JTextField();
         searchTextField.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
-        searchTextField.setBounds(450, 36, 200, fontSize + 5);
+        searchTextField.setBounds(450, 36, 200, fontSize + 8);
         searchTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -165,11 +177,12 @@ public class MainFrame extends JFrame implements ActionListener {
 
             public void highlight() {
                 for (int i = 0; i < table.getRowCount(); i++) {
+                    int i1 = table.getRowSorter().convertRowIndexToView(i);
                     String valueAt = (String) table.getModel().getValueAt(i, 0);
                     if (searchTextField.getText().equalsIgnoreCase(valueAt)) {
-                        table.setRowSelectionInterval(i, i);
+                        table.setRowSelectionInterval(i1, i1);
                     } else {
-                        table.removeRowSelectionInterval(i, i);
+                        table.removeRowSelectionInterval(i1, i1);
                     }
                 }
             }
@@ -214,6 +227,17 @@ public class MainFrame extends JFrame implements ActionListener {
         this.setVisible(true);
     }
 
+    private void sortTable() {
+        table.setAutoCreateRowSorter(true);
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
+        table.setRowSorter(sorter);
+        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+        int columnIndexToSort = 1;
+        sortKeys.add(new RowSorter.SortKey(columnIndexToSort, SortOrder.ASCENDING));
+        sorter.setSortKeys(sortKeys);
+        sorter.sort();
+    }
+
     @Override
     public void actionPerformed(ActionEvent event) {
         JMenuItem menuItem = (JMenuItem) event.getSource();
@@ -245,6 +269,7 @@ public class MainFrame extends JFrame implements ActionListener {
         table.setRowHeight(fontSize + 5);
         table.getTableHeader().setFont(font);
         table.addMouseListener(new TableMouseListener(table));
+        sortTable();
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);
         accountForm.setTableMode(tableModel);
