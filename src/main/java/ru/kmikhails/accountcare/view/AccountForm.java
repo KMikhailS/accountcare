@@ -143,7 +143,7 @@ public class AccountForm extends JFrame {
         constraints.gridy = 2;
         contentPane.add(companyBox, constraints);
 
-        inspectionOrganizationLabel = new JLabel("Проверяющая организация");
+        inspectionOrganizationLabel = new JLabel("Поверяющая организация");
         inspectionOrganizationLabel.setFont(FONT);
         inspectionOrganizationBox = new JComboBox<>(organizations);
         inspectionOrganizationBox.setFont(FONT);

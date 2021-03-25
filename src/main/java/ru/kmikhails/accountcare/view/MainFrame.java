@@ -14,6 +14,8 @@ import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.tablemodel.*;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -124,24 +126,59 @@ public class MainFrame extends JFrame implements ActionListener {
         buttonPanel.setLayout(null);
 
         JLabel yearLabel = new JLabel("Год");
-        yearLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        yearLabel.setBounds(43, 11, 46, 14);
+        yearLabel.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        yearLabel.setBounds(43, 11, 46, fontSize + 5);
         buttonPanel.add(yearLabel);
 
         JComboBox<String> yearComboBox = new JComboBox<>();
-        yearComboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
+        yearComboBox.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
         yearComboBox.setModel(new DefaultComboBoxModel<>(YEARS));
-        yearComboBox.setBounds(43, 36, 105, 22);
+        yearComboBox.setBounds(43, 36, 105, fontSize + 5);
         buttonPanel.add(yearComboBox);
 
-        JLabel serviceLabel = new JLabel("Услуга");
-        serviceLabel.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        serviceLabel.setBounds(181, 11, 46, 14);
+        JLabel serviceLabel = new JLabel("Таблица");
+        serviceLabel.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        serviceLabel.setBounds(181, 11, 75, fontSize + 5);
         buttonPanel.add(serviceLabel);
 
+        JLabel searchLabel = new JLabel("Поиск");
+        searchLabel.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        searchLabel.setBounds(380, 36, 75, fontSize + 5);
+        buttonPanel.add(searchLabel);
+
+        JTextField searchTextField = new JTextField();
+        searchTextField.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        searchTextField.setBounds(450, 36, 200, fontSize + 5);
+        searchTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                highlight();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                highlight();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                highlight();
+            }
+
+            public void highlight() {
+                for (int i = 0; i < table.getRowCount(); i++) {
+                    String valueAt = (String) table.getModel().getValueAt(i, 0);
+                    if (searchTextField.getText().equalsIgnoreCase(valueAt)) {
+                        table.setRowSelectionInterval(i, i);
+                    } else {
+                        table.removeRowSelectionInterval(i, i);
+                    }
+                }
+            }
+        });
+        buttonPanel.add(searchTextField);
+
         JComboBox<TableType> serviceComboBox = new JComboBox<>(tableTypes);
-        serviceComboBox.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        serviceComboBox.setBounds(181, 36, 125, 22);
+        serviceComboBox.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        serviceComboBox.setBounds(181, 36, 160, fontSize + 5);
         serviceComboBox.addActionListener(e -> {
             String serviceType = ((TableType) serviceComboBox.getSelectedItem()).getTableType();
             if (serviceType != null) {
@@ -207,7 +244,6 @@ public class MainFrame extends JFrame implements ActionListener {
         table.setFont(font);
         table.setRowHeight(fontSize + 5);
         table.getTableHeader().setFont(font);
-//        table.getTableHeader().se
         table.addMouseListener(new TableMouseListener(table));
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);

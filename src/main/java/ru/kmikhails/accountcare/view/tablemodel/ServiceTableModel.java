@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class ServiceTableModel extends CommonTableModel {
 
 	private static final String[] TABLE_HEADERS = {
-			"№ счета", "Дата", "Проверяющая организация", "Вид услуги", "Сумма", "Сумма с НДС",
+			"№ счета", "Дата", "Поверяющая организация", "Вид услуги", "Сумма", "Сумма с НДС",
 			"№ Счет фактуры", "Дата Счета фактуры", "Дата сдачи в бух", "Примечания"
 	};
 

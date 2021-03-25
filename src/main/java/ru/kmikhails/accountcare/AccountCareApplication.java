@@ -6,7 +6,10 @@ import ru.kmikhails.accountcare.entity.InspectionOrganization;
 import ru.kmikhails.accountcare.entity.TableType;
 import ru.kmikhails.accountcare.repository.CrudRepository;
 import ru.kmikhails.accountcare.repository.DataSource;
-import ru.kmikhails.accountcare.repository.impl.*;
+import ru.kmikhails.accountcare.repository.impl.AccountRepository;
+import ru.kmikhails.accountcare.repository.impl.CompanyRepository;
+import ru.kmikhails.accountcare.repository.impl.InspectionOrganizationRepository;
+import ru.kmikhails.accountcare.repository.impl.TableTypeRepository;
 import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.service.impl.AccountServiceImpl;
 import ru.kmikhails.accountcare.service.impl.CompanyService;
@@ -16,18 +19,10 @@ import ru.kmikhails.accountcare.validator.Validator;
 import ru.kmikhails.accountcare.validator.impl.AccountValidator;
 import ru.kmikhails.accountcare.view.MainFrame;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ResourceBundle;
 
 public class AccountCareApplication {
 	public static void main(String[] args) {
-//		try (InputStream inputStream = AccountCareApplication.class.getClassLoader().getResourceAsStream("config.properties")) {
-//			System.getProperties().load(inputStream);
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-
 		String propFilename = "application";
 		ResourceBundle resource = ResourceBundle.getBundle(propFilename);
 		DataSource dataSource = new DataSource(resource);
