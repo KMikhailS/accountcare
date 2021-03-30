@@ -17,14 +17,28 @@ import java.util.Optional;
 public class AccountRepository extends AbstractCrudRepository<Account> {
     private static final String ADD_QUERY = "INSERT INTO accounts (account_number, account_date, company_id, " +
             "service_type, amount, amount_with_nds, instruments, invoice_number, invoice_date, " +
-            "delivery_to_accounting_date, inspection_organization_id, notes, account_file_path, table_type_id) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM accounts WHERE account_id = ?";
+            "delivery_to_accounting_date, inspection_organization_id, notes, account_file_path, table_type_id, " +
+            "is_our, invoice_file_path, row_color) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    private static final String FIND_BY_ID_QUERY = "SELECT a.account_id, a.status, a.instruments, a.account_number," +
+            "a.account_date, a.company_id, c.company, " +
+            "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
+            "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id," +
+            "t.table_type, a.notes, a.notes, a.is_our, a.invoice_file_path, a.row_color " +
+            "FROM accounts a " +
+            "JOIN companies c " +
+            "ON a.company_id = c.company_id " +
+            "JOIN inspection_organizations io " +
+            "ON a.inspection_organization_id = io.inspection_organization_id " +
+            "JOIN table_types t " +
+            "ON a.table_type_id = t.table_type_id " +
+            "WHERE a.account_id = ?";
     private static final String DELETE_QUERY = "UPDATE accounts SET status = 'DELETED' WHERE account_id = ?";
     private static final String FIND_BY_ACCOUNT_NUMBER_AND_COMPANY =
             "SELECT a.account_id, a.status, a.instruments, a.account_number, a.account_date, a.company_id, c.company, " +
                     "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
-                    "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id, t.table_type, a.notes " +
+                    "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id," +
+                    "t.table_type, a.notes, a.is_our, a.invoice_file_path, a.row_color " +
                     "FROM accounts a " +
                     "JOIN companies c " +
                     "ON a.company_id = c.company_id " +
@@ -36,7 +50,8 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     private static final String FIND_ALL_BY_TABLE_TYPE_QUERY =
             "SELECT a.account_id, a.status, a.instruments, a.account_number, a.account_date, a.company_id, c.company, " +
                     "a.service_type, a.amount, a.amount_with_nds, a.invoice_date, a.invoice_number, a.delivery_to_accounting_date, " +
-                    "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id, t.table_type, a.notes " +
+                    "a.inspection_organization_id, io.inspection_organization, a.account_file_path, a.table_type_id," +
+                    "t.table_type, a.notes, a.notes, a.is_our, a.invoice_file_path, a.row_color " +
                     "FROM accounts a " +
                     "JOIN companies c " +
                     "ON a.company_id = c.company_id " +
@@ -48,7 +63,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     private static final String UPDATE = "UPDATE accounts SET account_number = ?, account_date = ?, company_id = ?," +
             "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
             "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
-            "table_type_id = ? WHERE account_id = ?";
+            "table_type_id = ?, is_our = ?, invoice_file_path = ?, row_color = ? WHERE account_id = ?";
     private static final String FIND_BY_NAME_QUERY = "";
 
     public AccountRepository(DataSource dataSource) {
@@ -109,7 +124,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
              final PreparedStatement statement = connection.prepareStatement(UPDATE)) {
 
             insert(statement, account);
-            statement.setLong(15, account.getId());
+            statement.setLong(18, account.getId());
 
             statement.executeUpdate();
 
@@ -165,6 +180,9 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
         statement.setString(12, account.getNotes());
         statement.setString(13, account.getAccountFile());
         statement.setLong(14, account.getTableType().getId());
+        statement.setBoolean(15, account.getOur());
+        statement.setString(16, account.getInvoiceFile());
+        statement.setInt(17, account.getRowColor());
     }
 
     protected Account mapResultSetToEntity(ResultSet resultSet) throws SQLException {
@@ -196,6 +214,10 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                         .withId(resultSet.getLong("table_type_id"))
                         .withTableType(resultSet.getString("table_type"))
                         .build())
+                .withIsOur(resultSet.getBoolean("is_our"))
+                .withInvoiceFile(resultSet.getString("invoice_file_path"))
+                .withRowColor(resultSet.getInt("row_color"))
                 .build();
     }
+
 }

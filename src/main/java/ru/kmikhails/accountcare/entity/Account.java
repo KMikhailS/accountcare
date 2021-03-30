@@ -1,7 +1,6 @@
 package ru.kmikhails.accountcare.entity;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 
 public class Account {
@@ -21,6 +20,9 @@ public class Account {
 	private final String accountFile;
 	private String status;
 	private final TableType tableType;
+	private final Boolean isOur;
+	private final String invoiceFile;
+	private final Integer rowColor;
 
 	private Account(Builder builder) {
 		this.id = builder.id;
@@ -39,6 +41,9 @@ public class Account {
 		this.accountFile = builder.accountFile;
 		this.status = builder.status;
 		this.tableType = builder.tableType;
+		this.isOur = builder.isOur;
+		this.invoiceFile = builder.invoiceFile;
+		this.rowColor = builder.rowColor;
 	}
 
 	public Long getId() {
@@ -113,13 +118,25 @@ public class Account {
 		return new Builder();
 	}
 
+	public Boolean getOur() {
+		return isOur;
+	}
+
+	public String getInvoiceFile() {
+		return invoiceFile;
+	}
+
+	public Integer getRowColor() {
+		return rowColor;
+	}
+
 	@Override
 	public String toString() {
 		return "Account{" +
 				"id=" + id +
 				", accountNumber='" + accountNumber + '\'' +
 				", accountDate=" + accountDate +
-				", company='" + company + '\'' +
+				", company=" + company +
 				", serviceType='" + serviceType + '\'' +
 				", instruments='" + instruments + '\'' +
 				", amount='" + amount + '\'' +
@@ -127,11 +144,14 @@ public class Account {
 				", invoiceNumber='" + invoiceNumber + '\'' +
 				", invoiceDate=" + invoiceDate +
 				", deliveryToAccountingDate=" + deliveryToAccountingDate +
-				", inspectionOrganization='" + inspectionOrganization + '\'' +
+				", inspectionOrganization=" + inspectionOrganization +
 				", notes='" + notes + '\'' +
 				", accountFile='" + accountFile + '\'' +
 				", status='" + status + '\'' +
-				", tableType='" + tableType + '\'' +
+				", tableType=" + tableType +
+				", isOur=" + isOur +
+				", invoiceFile='" + invoiceFile + '\'' +
+				", rowColor=" + rowColor +
 				'}';
 	}
 
@@ -158,6 +178,9 @@ public class Account {
 				Objects.equals(inspectionOrganization, account.inspectionOrganization) &&
 				Objects.equals(notes, account.notes) &&
 				Objects.equals(accountFile, account.accountFile) &&
+				Objects.equals(isOur, account.isOur) &&
+				Objects.equals(invoiceFile, account.invoiceFile) &&
+				Objects.equals(rowColor, account.rowColor) &&
 				Objects.equals(tableType, account.tableType) &&
 				status == account.status;
 	}
@@ -166,7 +189,7 @@ public class Account {
 	public int hashCode() {
 		return Objects.hash(id, accountNumber, accountDate, company, serviceType, instruments, amount,
 				amountWithNDS, invoiceNumber, invoiceDate, deliveryToAccountingDate, inspectionOrganization,
-				notes, accountFile, status, tableType);
+				notes, accountFile, status, tableType, isOur, invoiceFile, rowColor);
 	}
 
 	public static class Builder {
@@ -186,6 +209,9 @@ public class Account {
 		private String accountFile;
 		private String status;
 		private TableType tableType;
+		private Boolean isOur;
+		private String invoiceFile;
+		private Integer rowColor;
 
 		private Builder() {
 		}
@@ -270,6 +296,21 @@ public class Account {
 
 		public Builder withTableType(TableType tableType) {
 			this.tableType = tableType;
+			return this;
+		}
+
+		public Builder withIsOur(Boolean isOur) {
+			this.isOur = isOur;
+			return this;
+		}
+
+		public Builder withInvoiceFile(String invoiceFile) {
+			this.invoiceFile = invoiceFile;
+			return this;
+		}
+
+		public Builder withRowColor(Integer rowColor) {
+			this.rowColor = rowColor;
 			return this;
 		}
 	}

@@ -339,7 +339,7 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                chooserTextField.getText());
+                                chooserTextField.getText(), existAccount.getOur(), null, existAccount.getRowColor());
                         tableModel.update(account);
                     } else {
                         account = builtAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
@@ -350,7 +350,7 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                chooserTextField.getText());
+                                chooserTextField.getText(), false, null, null);
                         tableModel.addRow(account);
                     }
                 } else {
@@ -388,7 +388,8 @@ public class AccountForm extends JFrame {
                                  Long inspectionOrganizationId, String inspectionOrganization, String serviceType,
                                  Long tableTypeId, String tableType, String amount, String amountWithNDS,
                                  String instruments, String invoiceNumber, LocalDate invoiceDate,
-                                 LocalDate deliveryToAccountingDate, String notes, String accountFile) {
+                                 LocalDate deliveryToAccountingDate, String notes, String accountFile,
+                                 Boolean isOur, String invoiceFile, Integer rowColor) {
         return Account.builder()
                 .withId(id)
                 .withAccountNumber(accountNumber)
@@ -414,6 +415,9 @@ public class AccountForm extends JFrame {
                 .withDeliveryToAccountingDate(deliveryToAccountingDate)
                 .withNotes(notes)
                 .withAccountFile(accountFile)
+                .withIsOur(isOur)
+                .withInvoiceFile(invoiceFile)
+                .withRowColor(rowColor)
                 .build();
     }
 

@@ -10,12 +10,16 @@ import ru.kmikhails.accountcare.service.impl.CompanyService;
 import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
 import ru.kmikhails.accountcare.service.impl.TableTypeService;
 import ru.kmikhails.accountcare.util.PdfRunner;
+import ru.kmikhails.accountcare.util.RowNumberHolder;
 import ru.kmikhails.accountcare.util.StringUtils;
+import ru.kmikhails.accountcare.view.renderer.ChangeRowColorRenderer;
 import ru.kmikhails.accountcare.view.tablemodel.*;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -37,6 +41,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private static final String UPDATE_ROW = "Обновить счёт";
     private static final String SHOW_SCAN = "Показать скан";
     private static final String UPDATE_TABLE = "Обновить таблицу";
+    private static final String HIGHLIGHT_OUR = "Выделить \"наш\"";
     private static final String MENU = "Меню";
     private static final String[] YEARS = new String[]{"2021"};
 
@@ -61,6 +66,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private InspectionOrganization[] organizations;
     private TableType[] tableTypes;
     private AccountForm accountForm;
+    private List<Account> accounts;
 
     public MainFrame(ResourceBundle resource, AccountService accountService, CompanyService companyService,
                      TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService) {
@@ -85,13 +91,36 @@ public class MainFrame extends JFrame implements ActionListener {
 
         int fontSize = Integer.parseInt(resource.getString("font.size"));
 
+        accounts = accountService.findAllByTableType("ЧЦСМ");
+
         table = new JTable(commonTableModel);
+//            @Override
+//            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+//                Component component = super.prepareRenderer(renderer, row, column);
+//
+////                Account account = accountService.findById(59L);
+//                accounts.stream().filter(Account::getOur).forEach(a -> component.setForeground(Color.BLUE));
+////                if (account.getOur() != null && account.getOur()) {
+////                    component.setForeground(Color.BLUE);
+////                }
+//
+//                return component;
+//            }
+//        };
+
+//        table.prepareRenderer(new ChangeRowColorRenderer(accountService.findAllByTableType("ЧЦСМ")), 0, 0);
+
+        RowNumberHolder rowNumberHolder = new RowNumberHolder();
+        table.setDefaultRenderer(String.class, new ChangeRowColorRenderer(accounts, rowNumberHolder));
+
+
         font = new Font(null, Font.PLAIN, fontSize);
         table.setRowHeight(fontSize + 5);
         table.setFont(font);
         table.getTableHeader().setFont(font);
         table.getTableHeader().setMaximumSize(new Dimension(50, 50));
         sortTable();
+
         mainScrollPane = new JScrollPane(table);
 
         popupMenu = new JPopupMenu();
@@ -99,14 +128,17 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
         JMenuItem menuItemRemoveAll = new JMenuItem(UPDATE_ROW);
         JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
+        JMenuItem menuItemSetOur = new JMenuItem(HIGHLIGHT_OUR);
         menuItemAdd.addActionListener(this);
         menuItemRemove.addActionListener(this);
         menuItemRemoveAll.addActionListener(this);
         menuItemShowScan.addActionListener(this);
+        menuItemSetOur.addActionListener(this);
         popupMenu.add(menuItemAdd);
         popupMenu.add(menuItemRemove);
         popupMenu.add(menuItemRemoveAll);
         popupMenu.add(menuItemShowScan);
+        popupMenu.add(menuItemSetOur);
 
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -166,10 +198,12 @@ public class MainFrame extends JFrame implements ActionListener {
             public void insertUpdate(DocumentEvent e) {
                 highlight();
             }
+
             @Override
             public void removeUpdate(DocumentEvent e) {
                 highlight();
             }
+
             @Override
             public void changedUpdate(DocumentEvent e) {
                 highlight();
@@ -254,6 +288,9 @@ public class MainFrame extends JFrame implements ActionListener {
             case SHOW_SCAN:
                 showScan();
                 break;
+            case HIGHLIGHT_OUR:
+                highlightOur();
+                break;
             default:
                 JOptionPane.showMessageDialog(this, String.format("Ошибка при выборе меню [%s]", menuItem.getText()),
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
@@ -303,10 +340,7 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void updateRow() {
-        int rowNumber = table.getSelectedRow();
-        String accountNumber = (String) table.getValueAt(rowNumber, 0);
-        LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
-        Account account = commonTableModel.findAccount(accountNumber, date);
+        Account account = findAccountForRow();
         accountForm.showExistForm(account);
     }
 
@@ -319,10 +353,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     private void showScan() {
         try {
-            int rowNumber = table.getSelectedRow();
-            String accountNumber = (String) table.getValueAt(rowNumber, 0);
-            LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
-            Account account = commonTableModel.findAccount(accountNumber, date);
+            Account account = findAccountForRow();
             String filename = account.getAccountFile();
             if (StringUtils.isEmpty(filename)) {
                 JOptionPane.showMessageDialog(this, "К этому счёту не приложен скан",
@@ -336,6 +367,63 @@ public class MainFrame extends JFrame implements ActionListener {
                     "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
 
+    }
+
+    private void highlightOur() {
+        Account account = findAccountForRow();
+        Account ourAccount = builtAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
+                account.getCompany().getId(), account.getCompany().getCompany(), account.getInspectionOrganization().getId(),
+                account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
+                account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
+                account.getAmountWithNDS(), account.getInstruments(), account.getInvoiceNumber(), account.getInvoiceDate(),
+                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), true,
+                account.getInvoiceFile(), account.getRowColor());
+        accountService.update(ourAccount);
+    }
+
+    private Account builtAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
+                                 Long inspectionOrganizationId, String inspectionOrganization, String serviceType,
+                                 Long tableTypeId, String tableType, String amount, String amountWithNDS,
+                                 String instruments, String invoiceNumber, LocalDate invoiceDate,
+                                 LocalDate deliveryToAccountingDate, String notes, String accountFile,
+                                 Boolean isOur, String invoiceFile, Integer rowColor) {
+        return Account.builder()
+                .withId(id)
+                .withAccountNumber(accountNumber)
+                .withAccountDate(accountDate)
+                .withCompany(Company.builder()
+                        .withId(companyId)
+                        .withCompany(company)
+                        .build())
+                .withInspectionOrganization(InspectionOrganization.builder()
+                        .withId(inspectionOrganizationId)
+                        .withInspectionOrganization(inspectionOrganization)
+                        .build())
+                .withServiceType(serviceType)
+                .withTableType(TableType.builder()
+                        .withId(tableTypeId)
+                        .withTableType(tableType)
+                        .build())
+                .withAmount(amount)
+                .withAmountWithDNS(amountWithNDS)
+                .withInstruments(instruments)
+                .withInvoiceNumber(invoiceNumber)
+                .withInvoiceDate(invoiceDate)
+                .withDeliveryToAccountingDate(deliveryToAccountingDate)
+                .withNotes(notes)
+                .withAccountFile(accountFile)
+                .withIsOur(isOur)
+                .withInvoiceFile(invoiceFile)
+                .withRowColor(rowColor)
+                .build();
+    }
+
+    private Account findAccountForRow() {
+        int rowNumber = table.getSelectedRow();
+        String accountNumber = (String) table.getValueAt(rowNumber, 0);
+        LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
+
+        return commonTableModel.findAccount(accountNumber, date);
     }
 
     private TableType pickTableType() {
