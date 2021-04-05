@@ -2,7 +2,7 @@ package ru.kmikhails.accountcare.entity;
 
 import java.util.Objects;
 
-public class InspectionOrganization {
+public class InspectionOrganization implements Comparable<InspectionOrganization> {
     private final long id;
     private final String inspectionOrganization;
 
@@ -44,6 +44,11 @@ public class InspectionOrganization {
     @Override
     public String toString() {
         return inspectionOrganization;
+    }
+
+    @Override
+    public int compareTo(InspectionOrganization inspectionOrganization) {
+        return this.inspectionOrganization.compareTo(inspectionOrganization.getInspectionOrganization());
     }
 
     public static class Builder {

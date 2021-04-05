@@ -1,9 +1,9 @@
 package ru.kmikhails.accountcare.view.tablemodel;
 
 import ru.kmikhails.accountcare.entity.Account;
-import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.service.AccountService;
 
+import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +27,14 @@ public class UNIIMTableModel extends CommonTableModel {
     public UNIIMTableModel(AccountService accountService) {
         this.accountService = accountService;
         this.accounts = accountService.findAllByTableType("УНИИМ");
+    }
+
+    public Color getRowColor(int row) {
+        Account ourAccount = accounts.get(row);
+        if (ourAccount.getOur()) {
+            return Color.BLUE;
+        }
+        return Color.BLACK;
     }
 
     @Override

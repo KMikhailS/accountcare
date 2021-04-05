@@ -2,7 +2,7 @@ package ru.kmikhails.accountcare.entity;
 
 import java.util.Objects;
 
-public class Company {
+public class Company implements Comparable<Company> {
     private final long id;
     private final String company;
 
@@ -44,6 +44,11 @@ public class Company {
     @Override
     public String toString() {
         return company;
+    }
+
+    @Override
+    public int compareTo(Company company) {
+        return this.company.compareTo(company.getCompany());
     }
 
     public static class Builder {

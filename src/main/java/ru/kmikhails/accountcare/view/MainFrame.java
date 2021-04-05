@@ -10,7 +10,6 @@ import ru.kmikhails.accountcare.service.impl.CompanyService;
 import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
 import ru.kmikhails.accountcare.service.impl.TableTypeService;
 import ru.kmikhails.accountcare.util.PdfRunner;
-import ru.kmikhails.accountcare.util.RowNumberHolder;
 import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.renderer.ChangeRowColorRenderer;
 import ru.kmikhails.accountcare.view.tablemodel.*;
@@ -18,8 +17,6 @@ import ru.kmikhails.accountcare.view.tablemodel.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -42,6 +39,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private static final String SHOW_SCAN = "Показать скан";
     private static final String UPDATE_TABLE = "Обновить таблицу";
     private static final String HIGHLIGHT_OUR = "Выделить \"наш\"";
+    private static final String UNSET_HIGHLIGHT_OUR = "Снять выделение \"наш\"";
     private static final String MENU = "Меню";
     private static final String[] YEARS = new String[]{"2021"};
 
@@ -94,24 +92,7 @@ public class MainFrame extends JFrame implements ActionListener {
         accounts = accountService.findAllByTableType("ЧЦСМ");
 
         table = new JTable(commonTableModel);
-//            @Override
-//            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-//                Component component = super.prepareRenderer(renderer, row, column);
-//
-////                Account account = accountService.findById(59L);
-//                accounts.stream().filter(Account::getOur).forEach(a -> component.setForeground(Color.BLUE));
-////                if (account.getOur() != null && account.getOur()) {
-////                    component.setForeground(Color.BLUE);
-////                }
-//
-//                return component;
-//            }
-//        };
-
-//        table.prepareRenderer(new ChangeRowColorRenderer(accountService.findAllByTableType("ЧЦСМ")), 0, 0);
-
-        RowNumberHolder rowNumberHolder = new RowNumberHolder();
-        table.setDefaultRenderer(String.class, new ChangeRowColorRenderer(accounts, rowNumberHolder));
+        table.setDefaultRenderer(Object.class, new ChangeRowColorRenderer());
 
 
         font = new Font(null, Font.PLAIN, fontSize);
@@ -129,16 +110,19 @@ public class MainFrame extends JFrame implements ActionListener {
         JMenuItem menuItemRemoveAll = new JMenuItem(UPDATE_ROW);
         JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
         JMenuItem menuItemSetOur = new JMenuItem(HIGHLIGHT_OUR);
+        JMenuItem menuItemUnSetOur = new JMenuItem(UNSET_HIGHLIGHT_OUR);
         menuItemAdd.addActionListener(this);
         menuItemRemove.addActionListener(this);
         menuItemRemoveAll.addActionListener(this);
         menuItemShowScan.addActionListener(this);
         menuItemSetOur.addActionListener(this);
+        menuItemUnSetOur.addActionListener(this);
         popupMenu.add(menuItemAdd);
         popupMenu.add(menuItemRemove);
         popupMenu.add(menuItemRemoveAll);
         popupMenu.add(menuItemShowScan);
         popupMenu.add(menuItemSetOur);
+        popupMenu.add(menuItemUnSetOur);
 
         JMenuBar menuBar = new JMenuBar();
         setJMenuBar(menuBar);
@@ -291,6 +275,9 @@ public class MainFrame extends JFrame implements ActionListener {
             case HIGHLIGHT_OUR:
                 highlightOur();
                 break;
+            case UNSET_HIGHLIGHT_OUR:
+                unHighlightOur();
+                break;
             default:
                 JOptionPane.showMessageDialog(this, String.format("Ошибка при выборе меню [%s]", menuItem.getText()),
                         "Ошибка", JOptionPane.ERROR_MESSAGE);
@@ -306,6 +293,7 @@ public class MainFrame extends JFrame implements ActionListener {
         table.setRowHeight(fontSize + 5);
         table.getTableHeader().setFont(font);
         table.addMouseListener(new TableMouseListener(table));
+        table.setDefaultRenderer(Object.class, new ChangeRowColorRenderer());
         sortTable();
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);
@@ -379,6 +367,20 @@ public class MainFrame extends JFrame implements ActionListener {
                 account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), true,
                 account.getInvoiceFile(), account.getRowColor());
         accountService.update(ourAccount);
+        updateTable();
+    }
+
+    private void unHighlightOur() {
+        Account account = findAccountForRow();
+        Account ourAccount = builtAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
+                account.getCompany().getId(), account.getCompany().getCompany(), account.getInspectionOrganization().getId(),
+                account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
+                account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
+                account.getAmountWithNDS(), account.getInstruments(), account.getInvoiceNumber(), account.getInvoiceDate(),
+                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), false,
+                account.getInvoiceFile(), account.getRowColor());
+        accountService.update(ourAccount);
+        updateTable();
     }
 
     private Account builtAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,

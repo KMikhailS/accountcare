@@ -1,9 +1,10 @@
 package ru.kmikhails.accountcare.view.tablemodel;
 
 import ru.kmikhails.accountcare.entity.Account;
-import ru.kmikhails.accountcare.exception.AccountException;
+import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.service.AccountService;
 
+import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,13 +21,21 @@ public class CSMTableModel extends CommonTableModel {
 	private final String[] columnNames = TABLE_HEADERS;
 
 	private final Class[] columnClass = new Class[] {
-		String.class, LocalDate.class, String.class, String.class, String.class, String.class, String.class,
+		String.class, LocalDate.class, Company.class, String.class, String.class, String.class, String.class,
 			LocalDate.class, LocalDate.class, String.class
 	};
 
 	public CSMTableModel(AccountService accountService) {
 		this.accountService = accountService;
 		this.accounts = accountService.findAllByTableType("ЧЦСМ");
+	}
+
+	public Color getRowColor(int row) {
+		Account ourAccount = accounts.get(row);
+		if (ourAccount.getOur()) {
+			return Color.BLUE;
+		}
+		return Color.BLACK;
 	}
 
 	@Override

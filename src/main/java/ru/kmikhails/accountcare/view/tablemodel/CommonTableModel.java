@@ -3,6 +3,7 @@ package ru.kmikhails.accountcare.view.tablemodel;
 import ru.kmikhails.accountcare.entity.Account;
 
 import javax.swing.table.AbstractTableModel;
+import java.awt.*;
 import java.time.LocalDate;
 
 public abstract class CommonTableModel extends AbstractTableModel {
@@ -38,4 +39,6 @@ public abstract class CommonTableModel extends AbstractTableModel {
     public abstract void updateTable();
 
     public abstract String getTableTypeName();
+
+    public abstract Color getRowColor(int row);
 }
