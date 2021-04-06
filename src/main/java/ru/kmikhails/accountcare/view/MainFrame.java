@@ -107,20 +107,22 @@ public class MainFrame extends JFrame implements ActionListener {
         popupMenu = new JPopupMenu();
         JMenuItem menuItemAdd = new JMenuItem(ADD_ROW);
         JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
-        JMenuItem menuItemRemoveAll = new JMenuItem(UPDATE_ROW);
+        JMenuItem menuItemUpdate = new JMenuItem(UPDATE_ROW);
         JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
         JMenuItem menuItemSetOur = new JMenuItem(HIGHLIGHT_OUR);
         JMenuItem menuItemUnSetOur = new JMenuItem(UNSET_HIGHLIGHT_OUR);
         menuItemAdd.addActionListener(this);
         menuItemRemove.addActionListener(this);
-        menuItemRemoveAll.addActionListener(this);
+        menuItemUpdate.addActionListener(this);
         menuItemShowScan.addActionListener(this);
         menuItemSetOur.addActionListener(this);
         menuItemUnSetOur.addActionListener(this);
         popupMenu.add(menuItemAdd);
+        popupMenu.add(menuItemUpdate);
         popupMenu.add(menuItemRemove);
-        popupMenu.add(menuItemRemoveAll);
+        popupMenu.add(new JSeparator());
         popupMenu.add(menuItemShowScan);
+        popupMenu.add(new JSeparator());
         popupMenu.add(menuItemSetOur);
         popupMenu.add(menuItemUnSetOur);
 
@@ -321,10 +323,14 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void deleteRow() {
-        int rowNumber = table.getSelectedRow();
-        String accountNumber = (String) table.getValueAt(rowNumber, 0);
-        LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
-        commonTableModel.deleteRow(accountNumber, date);
+        int option = JOptionPane.showConfirmDialog(this, "Вы уверены, что хотите удалить этот счёт?",
+                "Удаление счёта", JOptionPane.YES_NO_OPTION);
+        if (option == 0) {
+            int rowNumber = table.getSelectedRow();
+            String accountNumber = (String) table.getValueAt(rowNumber, 0);
+            LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
+            commonTableModel.deleteRow(accountNumber, date);
+        }
     }
 
     private void updateRow() {

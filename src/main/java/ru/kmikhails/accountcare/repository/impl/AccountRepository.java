@@ -182,7 +182,11 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
         statement.setLong(14, account.getTableType().getId());
         statement.setBoolean(15, account.getOur());
         statement.setString(16, account.getInvoiceFile());
-        statement.setInt(17, account.getRowColor());
+        if (account.getRowColor() != null) {
+            statement.setInt(17, account.getRowColor());
+        } else {
+            statement.setNull(17, java.sql.Types.INTEGER);
+        }
     }
 
     protected Account mapResultSetToEntity(ResultSet resultSet) throws SQLException {
