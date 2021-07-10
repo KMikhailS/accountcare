@@ -7,12 +7,12 @@ import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
 import ru.kmikhails.accountcare.entity.TableType;
 import ru.kmikhails.accountcare.exception.AccountException;
+import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.view.tablemodel.CommonTableModel;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.util.Locale;
 
 public class AccountForm extends JFrame {
@@ -31,6 +31,7 @@ public class AccountForm extends JFrame {
     private static final Font FONT = new Font(null, Font.PLAIN, 14);
     private static final Locale LOCALE = new Locale("ru");
 
+    private Long accountId;
     private JLabel headLabel;
     private JPanel contentPane;
     private JLabel accountNumberLabel;
@@ -59,21 +60,27 @@ public class AccountForm extends JFrame {
     private DatePicker deliveryToAccountingDatePicker;
     private JLabel notesLabel;
     private JTextArea notesTextArea;
-    private JTextField chooserTextField;
+    private JTextField accountChooserTextField;
+    private JTextField invoiceChooserTextField;
     private JPanel chooserPanel;
-    private JButton chooserButton;
-    private JFileChooser fileChooser;
-    private JLabel chooserLabel;
+    private JButton accountChooserButton;
+    private JFileChooser accountFileChooser;
+    private JLabel accountChooserLabel;
+    private JButton invoiceChooserButton;
+    private JFileChooser invoiceFileChooser;
+    private JLabel invoiceChooserLabel;
     private JButton saveButton;
     private JButton cancelButton;
 
+    private final AccountService accountService;
     private CommonTableModel tableModel;
     private final Company[] companies;
     private final InspectionOrganization[] organizations;
     private final TableType[] tableTypes;
 
-    public AccountForm(CommonTableModel tableModel, Company[] companies, TableType[] tableTypes,
+    public AccountForm(AccountService accountService, CommonTableModel tableModel, Company[] companies, TableType[] tableTypes,
                        InspectionOrganization[] organizations) {
+        this.accountService = accountService;
         this.tableModel = tableModel;
         this.companies = companies;
         this.organizations = organizations;
@@ -83,6 +90,10 @@ public class AccountForm extends JFrame {
 
     public void setTableMode(CommonTableModel tableModel) {
         this.tableModel = tableModel;
+    }
+
+    public void setAccountId(Long accountId) {
+        this.accountId = accountId;
     }
 
     public void init() {
@@ -296,21 +307,35 @@ public class AccountForm extends JFrame {
         contentPane.add(new JScrollPane(notesTextArea), constraints);
 
         chooserPanel = new JPanel();
-        fileChooser = new JFileChooser();
+        accountFileChooser = new JFileChooser();
         chooserPanel.setLayout(new FlowLayout());
-        chooserTextField = new JTextField(30);
-        chooserTextField.setFont(FONT);
-        chooserButton = new JButton("Открыть");
-        chooserButton.setFont(FONT);
-        chooserButton.addActionListener(e -> {
-            if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                chooserTextField.setText(fileChooser.getSelectedFile().getAbsolutePath());
+        accountChooserTextField = new JTextField(30);
+        accountChooserTextField.setFont(FONT);
+        accountChooserButton = new JButton("Открыть");
+        accountChooserButton.setFont(FONT);
+        accountChooserButton.addActionListener(e -> {
+            if (accountFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                accountChooserTextField.setText(accountFileChooser.getSelectedFile().getAbsolutePath());
             }
         });
-        chooserPanel.add(chooserTextField);
-        chooserPanel.add(chooserButton);
-        chooserLabel = new JLabel("Открыть файл скана");
-        chooserLabel.setFont(FONT);
+        invoiceFileChooser = new JFileChooser();
+        invoiceChooserTextField = new JTextField(30);
+        invoiceChooserTextField.setFont(FONT);
+        invoiceChooserButton = new JButton("Открыть");
+        invoiceChooserButton.setFont(FONT);
+        invoiceChooserButton.addActionListener(e -> {
+            if (invoiceFileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                invoiceChooserTextField.setText(invoiceFileChooser.getSelectedFile().getAbsolutePath());
+            }
+        });
+        chooserPanel.add(accountChooserTextField);
+        chooserPanel.add(accountChooserButton);
+//        chooserPanel.add(invoiceChooserTextField);
+//        chooserPanel.add(invoiceChooserButton);
+        accountChooserLabel = new JLabel("Открыть файл скана счёта");
+        accountChooserLabel.setFont(FONT);
+//        invoiceChooserLabel = new JLabel("Открыть файл скана счёта фактуры");
+//        invoiceChooserLabel.setFont(FONT);
         constraints.insets = new Insets(0, 10, 0, 0);
         constraints.gridx = 1;
         constraints.gridy = 10;
@@ -321,7 +346,7 @@ public class AccountForm extends JFrame {
         constraints.gridwidth = 2;
         constraints.insets = new Insets(30, -10, 0, 0);
         constraints.anchor = GridBagConstraints.CENTER;
-        contentPane.add(chooserLabel, constraints);
+        contentPane.add(accountChooserLabel, constraints);
 
         saveButton = new JButton("Сохранить");
         saveButton.setFont(FONT);
@@ -329,9 +354,9 @@ public class AccountForm extends JFrame {
             try {
                 Account account;
                 if (accountNumberTextField.getText() != null && accountDatePicker.getDate() != null) {
-                    Account existAccount = tableModel.findAccount(accountNumberTextField.getText(), accountDatePicker.getDate());
+                    Account existAccount = accountService.findById(accountId);
                     if (existAccount != null && "NEW".equals(existAccount.getStatus())) {
-                        account = builtAccount(existAccount.getId(), accountNumberTextField.getText(), accountDatePicker.getDate(),
+                        account = accountService.buildAccount(existAccount.getId(), accountNumberTextField.getText(), accountDatePicker.getDate(),
                                 ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
                                 ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
                                 ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
@@ -339,10 +364,10 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                chooserTextField.getText(), existAccount.getOur(), null, existAccount.getRowColor());
+                                accountChooserTextField.getText(), existAccount.getOur(), null, existAccount.getRowColor());
                         tableModel.update(account);
                     } else {
-                        account = builtAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
+                        account = accountService.buildAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
                                 ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
                                 ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
                                 ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getInspectionOrganization(),
@@ -350,14 +375,13 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                chooserTextField.getText(), false, null, null);
+                                accountChooserTextField.getText(), false, null, null);
                         tableModel.addRow(account);
                     }
                 } else {
                     throw new AccountException("Номер счёта и дата не должны быть пустыми");
                 }
 
-//                this.dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
                 this.dispose();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, ex.getMessage(),
@@ -384,44 +408,8 @@ public class AccountForm extends JFrame {
         this.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
-    private Account builtAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
-                                 Long inspectionOrganizationId, String inspectionOrganization, String serviceType,
-                                 Long tableTypeId, String tableType, String amount, String amountWithNDS,
-                                 String instruments, String invoiceNumber, LocalDate invoiceDate,
-                                 LocalDate deliveryToAccountingDate, String notes, String accountFile,
-                                 Boolean isOur, String invoiceFile, Integer rowColor) {
-        return Account.builder()
-                .withId(id)
-                .withAccountNumber(accountNumber)
-                .withAccountDate(accountDate)
-                .withCompany(Company.builder()
-                        .withId(companyId)
-                        .withCompany(company)
-                        .build())
-                .withInspectionOrganization(InspectionOrganization.builder()
-                        .withId(inspectionOrganizationId)
-                        .withInspectionOrganization(inspectionOrganization)
-                        .build())
-                .withServiceType(serviceType)
-                .withTableType(TableType.builder()
-                        .withId(tableTypeId)
-                        .withTableType(tableType)
-                        .build())
-                .withAmount(amount)
-                .withAmountWithDNS(amountWithNDS)
-                .withInstruments(instruments)
-                .withInvoiceNumber(invoiceNumber)
-                .withInvoiceDate(invoiceDate)
-                .withDeliveryToAccountingDate(deliveryToAccountingDate)
-                .withNotes(notes)
-                .withAccountFile(accountFile)
-                .withIsOur(isOur)
-                .withInvoiceFile(invoiceFile)
-                .withRowColor(rowColor)
-                .build();
-    }
-
     public void showNewForm(TableType tableType) {
+        setAccountId(null);
         accountNumberTextField.setText("");
         amountTextField.setText("");
         amountWithNDSField.setText("");
@@ -432,7 +420,7 @@ public class AccountForm extends JFrame {
         invoiceDatePicker.setText("");
         deliveryToAccountingDatePicker.setText("");
         notesTextArea.setText("");
-        chooserTextField.setText("");
+        accountChooserTextField.setText("");
         tableTypeBox.setSelectedItem(TableType.builder()
                 .withId(tableType.getId())
                 .withTableType(tableType.getTableType())
@@ -441,6 +429,7 @@ public class AccountForm extends JFrame {
     }
 
     public void showExistForm(Account account) {
+        setAccountId(account.getId());
         accountNumberTextField.setText(account.getAccountNumber());
         companyBox.setSelectedItem(Company.builder()
                 .withId(account.getCompany().getId())
@@ -463,7 +452,7 @@ public class AccountForm extends JFrame {
         invoiceDatePicker.setDate(account.getInvoiceDate());
         deliveryToAccountingDatePicker.setDate(account.getDeliveryToAccountingDate());
         notesTextArea.setText(account.getNotes());
-        chooserTextField.setText(account.getAccountFile());
+        accountChooserTextField.setText(account.getAccountFile());
         this.setVisible(true);
     }
 }

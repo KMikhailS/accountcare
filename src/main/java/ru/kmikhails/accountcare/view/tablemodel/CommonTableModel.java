@@ -1,12 +1,22 @@
 package ru.kmikhails.accountcare.view.tablemodel;
 
 import ru.kmikhails.accountcare.entity.Account;
+import ru.kmikhails.accountcare.service.AccountService;
 
 import javax.swing.table.AbstractTableModel;
 import java.awt.*;
 import java.time.LocalDate;
+import java.util.List;
 
 public abstract class CommonTableModel extends AbstractTableModel {
+
+    public AccountService accountService;
+    public List<Account> accounts;
+
+    public CommonTableModel(AccountService accountService, List<Account> accounts) {
+        this.accountService = accountService;
+        this.accounts = accounts;
+    }
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -20,7 +30,11 @@ public abstract class CommonTableModel extends AbstractTableModel {
     public abstract Class<?> getColumnClass(int columnIndex);
 
     @Override
-    public abstract int getRowCount();
+    public int getRowCount() {
+        return (int) accounts.stream()
+                .filter(acc -> acc.getStatus().equals("NEW"))
+                .count();
+    }
 
     @Override
     public abstract int getColumnCount();
@@ -28,17 +42,44 @@ public abstract class CommonTableModel extends AbstractTableModel {
     @Override
     public abstract Object getValueAt(int rowIndex, int columnIndex);
 
-    public abstract void deleteRow(String accountNumber, LocalDate date);
-
-    public abstract void addRow(Account account);
-
-    public abstract Account findAccount(String accountNumber, LocalDate date);
-
-    public abstract void update(Account account);
-
     public abstract void updateTable();
 
     public abstract String getTableTypeName();
 
-    public abstract Color getRowColor(int row);
+    public Color getRowColor(int row) {
+        Account ourAccount = accounts.get(row);
+        if (ourAccount.getOur()) {
+            return Color.BLUE;
+        }
+        return Color.BLACK;
+    }
+
+    public void deleteRow(String accountNumber, LocalDate date) {
+        accounts.stream()
+                .filter(acc -> acc.getAccountNumber().equals(accountNumber))
+                .filter(acc -> acc.getAccountDate().equals(date))
+                .filter(acc -> acc.getStatus().equals("NEW"))
+                .findFirst()
+                .ifPresent(account -> accountService.deleteById(account.getId()));
+        updateTable();
+    }
+
+    public void addRow(Account account) {
+        accountService.save(account);
+        updateTable();
+    }
+
+    public Account findAccount(String accountNumber, LocalDate date) {
+        return accounts.stream()
+                .filter(acc -> acc.getAccountNumber().equals(accountNumber))
+                .filter(acc -> acc.getAccountDate().equals(date))
+                .filter(acc -> acc.getStatus().equals("NEW"))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void update(Account account) {
+        accountService.update(account);
+        updateTable();
+    }
 }

@@ -76,16 +76,20 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void init() {
-        csmTableModel = new CSMTableModel(accountService);
-        uniimTableModel = new UNIIMTableModel(accountService);
-        otherTableModel = new OtherTableModel(accountService);
-        serviceTableModel = new ServiceTableModel(accountService);
+        List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ");
+        List<Account> otherAccounts = accountService.findAllByTableType("другие");
+        List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ");
+        List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги");
+        csmTableModel = new CSMTableModel(accountService, CSMAccounts);
+        uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
+        otherTableModel = new OtherTableModel(accountService, otherAccounts);
+        serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);
         commonTableModel = csmTableModel;
 
         companies = companyService.findAll().toArray(new Company[0]);
         organizations = inspectionOrganizationService.findAll().toArray(new InspectionOrganization[0]);
         tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
-        accountForm = new AccountForm(commonTableModel, companies, tableTypes, organizations);
+        accountForm = new AccountForm(accountService, commonTableModel, companies, tableTypes, organizations);
 
         int fontSize = Integer.parseInt(resource.getString("font.size"));
 
@@ -195,7 +199,7 @@ public class MainFrame extends JFrame implements ActionListener {
                 highlight();
             }
 
-            public void highlight() {
+            private void highlight() {
                 for (int i = 0; i < table.getRowCount(); i++) {
                     int i1 = table.getRowSorter().convertRowIndexToView(i);
                     String valueAt = (String) table.getModel().getValueAt(i, 0);
@@ -365,7 +369,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     private void highlightOur() {
         Account account = findAccountForRow();
-        Account ourAccount = builtAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
+        Account ourAccount = accountService.buildAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
                 account.getCompany().getId(), account.getCompany().getCompany(), account.getInspectionOrganization().getId(),
                 account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
                 account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
@@ -378,7 +382,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     private void unHighlightOur() {
         Account account = findAccountForRow();
-        Account ourAccount = builtAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
+        Account ourAccount = accountService.buildAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
                 account.getCompany().getId(), account.getCompany().getCompany(), account.getInspectionOrganization().getId(),
                 account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
                 account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
@@ -387,43 +391,6 @@ public class MainFrame extends JFrame implements ActionListener {
                 account.getInvoiceFile(), account.getRowColor());
         accountService.update(ourAccount);
         updateTable();
-    }
-
-    private Account builtAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
-                                 Long inspectionOrganizationId, String inspectionOrganization, String serviceType,
-                                 Long tableTypeId, String tableType, String amount, String amountWithNDS,
-                                 String instruments, String invoiceNumber, LocalDate invoiceDate,
-                                 LocalDate deliveryToAccountingDate, String notes, String accountFile,
-                                 Boolean isOur, String invoiceFile, Integer rowColor) {
-        return Account.builder()
-                .withId(id)
-                .withAccountNumber(accountNumber)
-                .withAccountDate(accountDate)
-                .withCompany(Company.builder()
-                        .withId(companyId)
-                        .withCompany(company)
-                        .build())
-                .withInspectionOrganization(InspectionOrganization.builder()
-                        .withId(inspectionOrganizationId)
-                        .withInspectionOrganization(inspectionOrganization)
-                        .build())
-                .withServiceType(serviceType)
-                .withTableType(TableType.builder()
-                        .withId(tableTypeId)
-                        .withTableType(tableType)
-                        .build())
-                .withAmount(amount)
-                .withAmountWithDNS(amountWithNDS)
-                .withInstruments(instruments)
-                .withInvoiceNumber(invoiceNumber)
-                .withInvoiceDate(invoiceDate)
-                .withDeliveryToAccountingDate(deliveryToAccountingDate)
-                .withNotes(notes)
-                .withAccountFile(accountFile)
-                .withIsOur(isOur)
-                .withInvoiceFile(invoiceFile)
-                .withRowColor(rowColor)
-                .build();
     }
 
     private Account findAccountForRow() {

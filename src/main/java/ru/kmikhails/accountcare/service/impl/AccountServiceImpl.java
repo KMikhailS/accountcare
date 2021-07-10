@@ -1,7 +1,6 @@
 package ru.kmikhails.accountcare.service.impl;
 
-import ru.kmikhails.accountcare.entity.Account;
-import ru.kmikhails.accountcare.entity.AccountStatus;
+import ru.kmikhails.accountcare.entity.*;
 import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.repository.CrudRepository;
 import ru.kmikhails.accountcare.service.AccountService;
@@ -72,5 +71,43 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public Optional<Account> findByAccountNumberAndDate(String accountNumber, LocalDate date) {
 		return Optional.empty();
+	}
+
+	@Override
+	public Account buildAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
+								 Long inspectionOrganizationId, String inspectionOrganization, String serviceType,
+								 Long tableTypeId, String tableType, String amount, String amountWithNDS,
+								 String instruments, String invoiceNumber, LocalDate invoiceDate,
+								 LocalDate deliveryToAccountingDate, String notes, String accountFile,
+								 Boolean isOur, String invoiceFile, Integer rowColor) {
+		return Account.builder()
+				.withId(id)
+				.withAccountNumber(accountNumber)
+				.withAccountDate(accountDate)
+				.withCompany(Company.builder()
+						.withId(companyId)
+						.withCompany(company)
+						.build())
+				.withInspectionOrganization(InspectionOrganization.builder()
+						.withId(inspectionOrganizationId)
+						.withInspectionOrganization(inspectionOrganization)
+						.build())
+				.withServiceType(serviceType)
+				.withTableType(TableType.builder()
+						.withId(tableTypeId)
+						.withTableType(tableType)
+						.build())
+				.withAmount(amount)
+				.withAmountWithDNS(amountWithNDS)
+				.withInstruments(instruments)
+				.withInvoiceNumber(invoiceNumber)
+				.withInvoiceDate(invoiceDate)
+				.withDeliveryToAccountingDate(deliveryToAccountingDate)
+				.withNotes(notes)
+				.withAccountFile(accountFile)
+				.withIsOur(isOur)
+				.withInvoiceFile(invoiceFile)
+				.withRowColor(rowColor)
+				.build();
 	}
 }
