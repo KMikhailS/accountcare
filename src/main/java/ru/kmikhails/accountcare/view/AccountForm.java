@@ -11,8 +11,12 @@ import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.view.tablemodel.CommonTableModel;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 public class AccountForm extends JFrame {
@@ -27,9 +31,10 @@ public class AccountForm extends JFrame {
     private static final Insets BOX_INSET = new Insets(-15, 0, 0, 0);
     private static final Insets LEFT_INSET = new Insets(10, 20, 0, 0);
 
-    private static final Dimension FORM_SIZE = new Dimension(700, 700);
+    private static final Dimension FORM_SIZE = new Dimension(800, 700);
     private static final Font FONT = new Font(null, Font.PLAIN, 14);
     private static final Locale LOCALE = new Locale("ru");
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy");
 
     private Long accountId;
     private JLabel headLabel;
@@ -71,6 +76,10 @@ public class AccountForm extends JFrame {
     private JLabel invoiceChooserLabel;
     private JButton saveButton;
     private JButton cancelButton;
+    private JCheckBox ourCheckBox;
+    private JLabel ourLabel;
+
+    private boolean isUpdate;
 
     private final AccountService accountService;
     private CommonTableModel tableModel;
@@ -88,6 +97,14 @@ public class AccountForm extends JFrame {
         init();
     }
 
+    public boolean isUpdate() {
+        return isUpdate;
+    }
+
+    public void setUpdate(boolean update) {
+        isUpdate = update;
+    }
+
     public void setTableMode(CommonTableModel tableModel) {
         this.tableModel = tableModel;
     }
@@ -100,6 +117,9 @@ public class AccountForm extends JFrame {
         this.setLayout(new GridBagLayout());
         this.setSize(FORM_SIZE);
         this.setResizable(false);
+        this.setTitle("Форма счёта");
+        ImageIcon mainIcon = new ImageIcon("src/main/resources/icons/icon.png");
+        this.setIconImage(mainIcon.getImage());
         contentPane = new JPanel(new GridBagLayout());
         this.getContentPane().add(contentPane);
 
@@ -153,6 +173,16 @@ public class AccountForm extends JFrame {
         constraints.gridx = 2;
         constraints.gridy = 2;
         contentPane.add(companyBox, constraints);
+
+        ourLabel = new JLabel("Метка НАШ");
+        ourLabel.setFont(FONT);
+        constraints.gridx = 3;
+        constraints.gridy = 1;
+        contentPane.add(ourLabel, constraints);
+        ourCheckBox = new JCheckBox();
+        constraints.gridx = 3;
+        constraints.gridy = 2;
+        contentPane.add(ourCheckBox, constraints);
 
         inspectionOrganizationLabel = new JLabel("Поверяющая организация");
         inspectionOrganizationLabel.setFont(FONT);
@@ -245,6 +275,22 @@ public class AccountForm extends JFrame {
         constraints.gridx = 0;
         constraints.gridy = 8;
         contentPane.add(invoiceNumberTextField, constraints);
+
+        invoiceNumberTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                deliveryToAccountingDatePicker.setDate(LocalDate.now());
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+
+            }
+        });
 
         invoiceDateLabel = new JLabel("Дата счета фактуры");
         invoiceDateLabel.setFont(FONT);
@@ -354,8 +400,8 @@ public class AccountForm extends JFrame {
             try {
                 Account account;
                 if (accountNumberTextField.getText() != null && accountDatePicker.getDate() != null) {
-                    Account existAccount = accountService.findById(accountId);
-                    if (existAccount != null && "NEW".equals(existAccount.getStatus())) {
+                    if (accountId != null) {
+                        Account existAccount = accountService.findById(accountId);
                         account = accountService.buildAccount(existAccount.getId(), accountNumberTextField.getText(), accountDatePicker.getDate(),
                                 ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
                                 ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
@@ -364,9 +410,13 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                accountChooserTextField.getText(), existAccount.getOur(), null, existAccount.getRowColor());
+                                accountChooserTextField.getText(), ourCheckBox.isSelected(), null, existAccount.getRowColor());
                         tableModel.update(account);
                     } else {
+                        if (accountService.findByAccountNumberAndDate(accountNumberTextField.getText(),
+                                accountDatePicker.getDate()) != null) {
+                            throw new AccountException("Счёт с таким номером и датой уже существует");
+                        }
                         account = accountService.buildAccount(null, accountNumberTextField.getText(), accountDatePicker.getDate(),
                                 ((Company) companyBox.getSelectedItem()).getId(), ((Company) companyBox.getSelectedItem()).getCompany(),
                                 ((InspectionOrganization) inspectionOrganizationBox.getSelectedItem()).getId(),
@@ -375,7 +425,7 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                accountChooserTextField.getText(), false, null, null);
+                                accountChooserTextField.getText(), ourCheckBox.isSelected(), null, null);
                         tableModel.addRow(account);
                     }
                 } else {
@@ -425,6 +475,7 @@ public class AccountForm extends JFrame {
                 .withId(tableType.getId())
                 .withTableType(tableType.getTableType())
                 .build());
+        ourCheckBox.setSelected(false);
         this.setVisible(true);
     }
 
@@ -453,6 +504,7 @@ public class AccountForm extends JFrame {
         deliveryToAccountingDatePicker.setDate(account.getDeliveryToAccountingDate());
         notesTextArea.setText(account.getNotes());
         accountChooserTextField.setText(account.getAccountFile());
+        ourCheckBox.setSelected(account.getOur());
         this.setVisible(true);
     }
 }

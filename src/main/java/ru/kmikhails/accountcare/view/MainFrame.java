@@ -1,5 +1,6 @@
 package ru.kmikhails.accountcare.view;
 
+import org.apache.commons.io.IOUtils;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
@@ -9,6 +10,7 @@ import ru.kmikhails.accountcare.service.AccountService;
 import ru.kmikhails.accountcare.service.impl.CompanyService;
 import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
 import ru.kmikhails.accountcare.service.impl.TableTypeService;
+import ru.kmikhails.accountcare.util.ExcelExporter;
 import ru.kmikhails.accountcare.util.PdfRunner;
 import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.renderer.ChangeRowColorRenderer;
@@ -17,20 +19,25 @@ import ru.kmikhails.accountcare.view.tablemodel.*;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class MainFrame extends JFrame implements ActionListener {
     private static final String ADD_ROW = "Добавить счёт";
@@ -40,6 +47,8 @@ public class MainFrame extends JFrame implements ActionListener {
     private static final String UPDATE_TABLE = "Обновить таблицу";
     private static final String HIGHLIGHT_OUR = "Выделить \"наш\"";
     private static final String UNSET_HIGHLIGHT_OUR = "Снять выделение \"наш\"";
+    private static final String EXPORT = "Экспорт";
+    private static final String EXPORT_EXCEL_CSM = "Экспорт счетов без фактур ЧЦСМ";
     private static final String MENU = "Меню";
     private static final String[] YEARS = new String[]{"2021"};
 
@@ -60,6 +69,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private JTable table;
     private JPanel buttonPanel;
     private JScrollPane mainScrollPane;
+    private JTableHeader header;
     private Company[] companies;
     private InspectionOrganization[] organizations;
     private TableType[] tableTypes;
@@ -76,16 +86,7 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void init() {
-        List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ");
-        List<Account> otherAccounts = accountService.findAllByTableType("другие");
-        List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ");
-        List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги");
-        csmTableModel = new CSMTableModel(accountService, CSMAccounts);
-        uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
-        otherTableModel = new OtherTableModel(accountService, otherAccounts);
-        serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);
-        commonTableModel = csmTableModel;
-
+        configureTableModel();
         companies = companyService.findAll().toArray(new Company[0]);
         organizations = inspectionOrganizationService.findAll().toArray(new InspectionOrganization[0]);
         tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
@@ -97,6 +98,8 @@ public class MainFrame extends JFrame implements ActionListener {
 
         table = new JTable(commonTableModel);
         table.setDefaultRenderer(Object.class, new ChangeRowColorRenderer());
+        table.setSelectionBackground(new Color(180, 180, 180));
+        table.setShowVerticalLines(false);
 
 
         font = new Font(null, Font.PLAIN, fontSize);
@@ -104,49 +107,30 @@ public class MainFrame extends JFrame implements ActionListener {
         table.setFont(font);
         table.getTableHeader().setFont(font);
         table.getTableHeader().setMaximumSize(new Dimension(50, 50));
+        table.getTableHeader().setOpaque(false);
+        table.getTableHeader().setBackground(new Color(40, 132, 189));
+        table.getTableHeader().setForeground(new Color(255, 255, 255));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 50));
         sortTable();
 
         mainScrollPane = new JScrollPane(table);
 
-        popupMenu = new JPopupMenu();
-        JMenuItem menuItemAdd = new JMenuItem(ADD_ROW);
-        JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
-        JMenuItem menuItemUpdate = new JMenuItem(UPDATE_ROW);
-        JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
-        JMenuItem menuItemSetOur = new JMenuItem(HIGHLIGHT_OUR);
-        JMenuItem menuItemUnSetOur = new JMenuItem(UNSET_HIGHLIGHT_OUR);
-        menuItemAdd.addActionListener(this);
-        menuItemRemove.addActionListener(this);
-        menuItemUpdate.addActionListener(this);
-        menuItemShowScan.addActionListener(this);
-        menuItemSetOur.addActionListener(this);
-        menuItemUnSetOur.addActionListener(this);
-        popupMenu.add(menuItemAdd);
-        popupMenu.add(menuItemUpdate);
-        popupMenu.add(menuItemRemove);
-        popupMenu.add(new JSeparator());
-        popupMenu.add(menuItemShowScan);
-        popupMenu.add(new JSeparator());
-        popupMenu.add(menuItemSetOur);
-        popupMenu.add(menuItemUnSetOur);
+        configurePopupMenu();
 
-        JMenuBar menuBar = new JMenuBar();
-        setJMenuBar(menuBar);
-
-        JMenu mainMenu = new JMenu(MENU);
-        menuBar.add(mainMenu);
-
-        JMenuItem addAccountMenuItem = new JMenuItem(ADD_ROW);
-        mainMenu.add(addAccountMenuItem);
-        addAccountMenuItem.addActionListener(e -> addNewRow());
-
-        JMenuItem updateTableMenuItem = new JMenuItem(UPDATE_TABLE);
-        mainMenu.add(updateTableMenuItem);
-        updateTableMenuItem.addActionListener(e -> updateTable());
+        configureMenu();
 
         table.setComponentPopupMenu(popupMenu);
         table.addMouseListener(new TableMouseListener(table));
 
+        printMainInterface(fontSize);
+//        this.setSize(1600, 500);
+        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        this.setLocationRelativeTo(null);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setVisible(true);
+    }
+
+    private void printMainInterface(int fontSize) {
         this.setLayout(new BorderLayout());
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(0, 70));
@@ -170,27 +154,53 @@ public class MainFrame extends JFrame implements ActionListener {
 
         JLabel searchLabel = new JLabel("Поиск");
         searchLabel.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
-        searchLabel.setBounds(380, 36, 75, fontSize + 5);
+        searchLabel.setBounds(780, 36, 75, fontSize + 5);
         buttonPanel.add(searchLabel);
 
-//        Icon icon = new ImageIcon("src/main/resources/icons/cross.jpg");
+        JButton addNewRowButton = new JButton();
+        addNewRowButton.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        addNewRowButton.setText("Добавить счёт");
+        addNewRowButton.setBounds(380, 34, 180, fontSize + 10);
+        addNewRowButton.addActionListener(e -> addNewRow());
+        buttonPanel.add(addNewRowButton);
+
         JButton searchCancelButton = new JButton();
-        searchCancelButton.addActionListener(e -> searchTextField.setText(""));
-        searchLabel.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
-        searchCancelButton.setBounds(652, 36, 30, fontSize + 8);
-        buttonPanel.add(searchCancelButton);
+        try {
+            InputStream crossInputStream = getClass().getClassLoader().getResourceAsStream("cross.png");
+            if (crossInputStream != null) {
+                byte[] crossBytes = IOUtils.toByteArray(crossInputStream);
+                if (crossBytes != null && crossBytes.length > 0) {
+                    Icon icon = new ImageIcon(crossBytes);
+                    searchCancelButton.addActionListener(e -> searchTextField.setText(""));
+                    searchCancelButton.setIcon(icon);
+                    searchCancelButton.setBorderPainted(false);
+                    searchCancelButton.setBackground(Color.WHITE);
+                    searchCancelButton.setOpaque(true);
+                    searchCancelButton.setPreferredSize(new Dimension(20, 20));
+                    searchCancelButton.setContentAreaFilled(false);
+                    searchCancelButton.setForeground(Color.WHITE);
+                    searchCancelButton.setVisible(false);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         searchTextField = new JTextField();
         searchTextField.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
-        searchTextField.setBounds(450, 36, 200, fontSize + 8);
+        searchTextField.setBounds(850, 36, 200, fontSize + 8);
         searchTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
+                searchCancelButton.setVisible(true);
                 highlight();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
+                if (searchTextField.getText().isEmpty()) {
+                    searchCancelButton.setVisible(false);
+                }
                 highlight();
             }
 
@@ -211,6 +221,9 @@ public class MainFrame extends JFrame implements ActionListener {
                 }
             }
         });
+        ComponentBorder searchComponent = new ComponentBorder(searchCancelButton);
+        searchComponent.install(searchTextField);
+        searchComponent.setEdge(ComponentBorder.Edge.RIGHT);
         buttonPanel.add(searchTextField);
 
         JComboBox<TableType> serviceComboBox = new JComboBox<>(tableTypes);
@@ -244,11 +257,78 @@ public class MainFrame extends JFrame implements ActionListener {
 
         this.add(buttonPanel, BorderLayout.NORTH);
         this.add(mainScrollPane, BorderLayout.CENTER);
-        this.setTitle("Test Table");
-        this.setSize(1500, 500);
-        this.setLocationRelativeTo(null);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setVisible(true);
+        this.setTitle("Счета метрологии");
+        try {
+            InputStream mainIconInputStream = getClass().getClassLoader().getResourceAsStream("icon.png");
+            if (mainIconInputStream != null) {
+                byte[] mainIconBytes = IOUtils.toByteArray(mainIconInputStream);
+                if (mainIconBytes != null && mainIconBytes.length > 0) {
+                    ImageIcon mainIcon = new ImageIcon(mainIconBytes);
+                    this.setIconImage(mainIcon.getImage());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void configureMenu() {
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        JMenu mainMenu = new JMenu(MENU);
+        menuBar.add(mainMenu);
+
+        JMenu exportMenu = new JMenu(EXPORT);
+        menuBar.add(exportMenu);
+
+        JMenuItem addAccountMenuItem = new JMenuItem(ADD_ROW);
+        mainMenu.add(addAccountMenuItem);
+        addAccountMenuItem.addActionListener(e -> addNewRow());
+
+        JMenuItem updateTableMenuItem = new JMenuItem(UPDATE_TABLE);
+        mainMenu.add(updateTableMenuItem);
+        updateTableMenuItem.addActionListener(e -> updateTable());
+
+        JMenuItem exportForCsmMenuItem = new JMenuItem(EXPORT_EXCEL_CSM);
+        exportMenu.add(exportForCsmMenuItem);
+        exportForCsmMenuItem.addActionListener(e -> exportToExel());
+    }
+
+    private void configurePopupMenu() {
+        popupMenu = new JPopupMenu();
+        JMenuItem menuItemAdd = new JMenuItem(ADD_ROW);
+        JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
+        JMenuItem menuItemUpdate = new JMenuItem(UPDATE_ROW);
+        JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
+        JMenuItem menuItemSetOur = new JMenuItem(HIGHLIGHT_OUR);
+        JMenuItem menuItemUnSetOur = new JMenuItem(UNSET_HIGHLIGHT_OUR);
+        menuItemAdd.addActionListener(this);
+        menuItemRemove.addActionListener(this);
+        menuItemUpdate.addActionListener(this);
+        menuItemShowScan.addActionListener(this);
+        menuItemSetOur.addActionListener(this);
+        menuItemUnSetOur.addActionListener(this);
+        popupMenu.add(menuItemAdd);
+        popupMenu.add(menuItemUpdate);
+        popupMenu.add(menuItemRemove);
+        popupMenu.add(new JSeparator());
+        popupMenu.add(menuItemShowScan);
+        popupMenu.add(new JSeparator());
+        popupMenu.add(menuItemSetOur);
+        popupMenu.add(menuItemUnSetOur);
+    }
+
+    private void configureTableModel() {
+        List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ");
+        List<Account> otherAccounts = accountService.findAllByTableType("другие");
+        List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ");
+        List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги");
+        csmTableModel = new CSMTableModel(accountService, CSMAccounts);
+        uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
+        otherTableModel = new OtherTableModel(accountService, otherAccounts);
+        serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);
+        commonTableModel = csmTableModel;
     }
 
     private void sortTable() {
@@ -256,8 +336,10 @@ public class MainFrame extends JFrame implements ActionListener {
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        int columnIndexToSort = 1;
-        sortKeys.add(new RowSorter.SortKey(columnIndexToSort, SortOrder.ASCENDING));
+        int dateColumn = 1;
+        sortKeys.add(new RowSorter.SortKey(dateColumn, SortOrder.DESCENDING));
+        int accountNumberColumn = 0;
+        sortKeys.add(new RowSorter.SortKey(accountNumberColumn, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
         sorter.sort();
     }
@@ -290,6 +372,16 @@ public class MainFrame extends JFrame implements ActionListener {
         }
     }
 
+    private void exportToExel() {
+        SwingUtilities.invokeLater(() -> {
+            List<Account> accounts = accountService.findAllByTableType("ЧЦСМ").stream()
+                    .filter(account -> account.getInvoiceNumber().isEmpty())
+                    .sorted(Comparator.comparing(Account::getAccountNumber))
+                    .collect(Collectors.toList());
+            ExcelExporter.export(accounts);
+        });
+    }
+
     private void resetTableModel(CommonTableModel tableModel, int fontSize) {
         this.remove(mainScrollPane);
         this.commonTableModel = tableModel;
@@ -297,9 +389,18 @@ public class MainFrame extends JFrame implements ActionListener {
         table.setComponentPopupMenu(popupMenu);
         table.setFont(font);
         table.setRowHeight(fontSize + 5);
+
         table.getTableHeader().setFont(font);
+        table.getTableHeader().setMaximumSize(new Dimension(50, 50));
+        table.getTableHeader().setOpaque(false);
+        table.getTableHeader().setBackground(new Color(40, 132, 189));
+        table.getTableHeader().setForeground(new Color(255, 255, 255));
+        table.getTableHeader().setPreferredSize(new Dimension(0, 50));
+
         table.addMouseListener(new TableMouseListener(table));
         table.setDefaultRenderer(Object.class, new ChangeRowColorRenderer());
+        table.setSelectionBackground(new Color(180, 180, 180));
+        table.setShowVerticalLines(false);
         sortTable();
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);
@@ -323,6 +424,7 @@ public class MainFrame extends JFrame implements ActionListener {
     }
 
     private void addNewRow() {
+        accountForm.setUpdate(false);
         accountForm.showNewForm(pickTableType());
     }
 
@@ -339,6 +441,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     private void updateRow() {
         Account account = findAccountForRow();
+        accountForm.setUpdate(true);
         accountForm.showExistForm(account);
     }
 

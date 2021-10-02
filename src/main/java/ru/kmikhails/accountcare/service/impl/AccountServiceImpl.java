@@ -69,8 +69,8 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public Optional<Account> findByAccountNumberAndDate(String accountNumber, LocalDate date) {
-		return Optional.empty();
+	public Account findByAccountNumberAndDate(String accountNumber, LocalDate date) {
+		return accountRepository.findByAccountNumberAndDate(accountNumber, date).orElse(null);
 	}
 
 	@Override

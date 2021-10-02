@@ -13,7 +13,7 @@ public interface AccountService extends Service<Account> {
 
 	List<Account> findAllByTableType(String tableType);
 
-	Optional<Account> findByAccountNumberAndDate(String accountNumber, LocalDate date);
+	Account findByAccountNumberAndDate(String accountNumber, LocalDate date);
 
 	Account buildAccount(Long id, String accountNumber, LocalDate accountDate, Long companyId, String company,
 						 Long inspectionOrganizationId, String inspectionOrganization, String serviceType,

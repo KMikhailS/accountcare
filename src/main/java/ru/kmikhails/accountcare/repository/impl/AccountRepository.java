@@ -64,6 +64,8 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
             "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
             "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
             "table_type_id = ?, is_our = ?, invoice_file_path = ?, row_color = ? WHERE account_id = ?";
+    private static final String FIND_BY_ACCOUNT_NUMBER_AND_DATE =
+            "SELECT * FROM accounts a WHERE a.account_number = ? AND a.account_date = ? AND status = 'NEW'";
     private static final String FIND_BY_NAME_QUERY = "";
 
     public AccountRepository(DataSource dataSource) {
@@ -131,6 +133,27 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
         } catch (SQLException ex) {
             throw new DataBaseException(ex);
         }
+    }
+
+    @Override
+    public Optional<Account> findByAccountNumberAndDate(String accountNumber, LocalDate date) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(FIND_BY_ACCOUNT_NUMBER_AND_DATE)) {
+
+            statement.setString(1, accountNumber);
+            statement.setDate(2, Date.valueOf(date));
+
+            try (final ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return Optional.of(mapResultSetToEntityShort(resultSet));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+//			LOG.error(e);
+            throw new DataBaseException(e);
+        }
+        return Optional.empty();
     }
 
     public Optional<Account> findByAccountNumberAndCompany(String accountNumber, long companyId) {
@@ -221,6 +244,12 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                 .withIsOur(resultSet.getBoolean("is_our"))
                 .withInvoiceFile(resultSet.getString("invoice_file_path"))
                 .withRowColor(resultSet.getInt("row_color"))
+                .build();
+    }
+
+    private Account mapResultSetToEntityShort(ResultSet resultSet) throws SQLException {
+        return Account.builder()
+                .withId(resultSet.getLong("account_id"))
                 .build();
     }
 
