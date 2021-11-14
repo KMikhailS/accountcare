@@ -1,5 +1,7 @@
 package ru.kmikhails.accountcare.repository.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.exception.DataBaseException;
 import ru.kmikhails.accountcare.repository.AbstractCrudRepository;
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class CompanyRepository extends AbstractCrudRepository<Company> {
-
+    private static final Logger LOG = LogManager.getLogger(CompanyRepository.class);
     private static final String ADD_QUERY = "INSERT INTO companies (company) VALUES (?)";
     private static final String FIND_ALL_QUERY = "SELECT * FROM companies";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM companies WHERE company_id = ?";
@@ -42,7 +44,7 @@ public class CompanyRepository extends AbstractCrudRepository<Company> {
                 connection.rollback();
             }
         } catch (SQLException e) {
-//            LOG.error(e);
+            LOG.error(e);
             throw new DataBaseException(e);
         }
         return Optional.empty();

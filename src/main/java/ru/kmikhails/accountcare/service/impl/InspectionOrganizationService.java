@@ -13,6 +13,7 @@ public class InspectionOrganizationService implements Service<InspectionOrganiza
     public InspectionOrganizationService(CrudRepository<InspectionOrganization> inspectionOrganizationRepository) {
         this.inspectionOrganizationRepository = inspectionOrganizationRepository;
     }
+
     @Override
     public void save(InspectionOrganization entity) {
 

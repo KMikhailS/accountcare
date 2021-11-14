@@ -1,7 +1,5 @@
 package ru.kmikhails.accountcare.repository;
 
-import ru.kmikhails.accountcare.entity.Account;
-
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;

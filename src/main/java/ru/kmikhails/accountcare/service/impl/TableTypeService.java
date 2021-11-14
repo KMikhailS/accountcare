@@ -14,6 +14,7 @@ public class TableTypeService implements Service<TableType> {
     public TableTypeService(CrudRepository<TableType> tableTypeRepository) {
         this.tableTypeRepository = tableTypeRepository;
     }
+
     @Override
     public void save(TableType entity) {
 

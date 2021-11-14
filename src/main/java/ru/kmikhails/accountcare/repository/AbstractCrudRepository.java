@@ -1,6 +1,7 @@
 package ru.kmikhails.accountcare.repository;
 
-import ru.kmikhails.accountcare.entity.Account;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.kmikhails.accountcare.exception.DataBaseException;
 
 import java.sql.Connection;
@@ -14,13 +15,14 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
+    private static final Logger LOG = LogManager.getLogger(AbstractCrudRepository.class);
 
     protected static final BiConsumer<PreparedStatement, Long> LONG_PARAM_SETTER = (statement, value) -> {
         try {
             statement.setLong(1, value);
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
+            throw new DataBaseException(e);
         }
     };
 
@@ -28,8 +30,8 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
         try {
             statement.setString(1, string);
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
+            throw new DataBaseException(e);
         }
     };
 
@@ -59,8 +61,7 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
                 throw new IllegalArgumentException("Entity with id " + param + " does not exist");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
             throw new DataBaseException(e);
         }
     }
@@ -77,8 +78,7 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
             throw new DataBaseException(e);
         }
 
@@ -99,8 +99,7 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
                 return entities;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
             throw new DataBaseException(e);
         }
     }
@@ -117,8 +116,7 @@ public abstract class AbstractCrudRepository<E> implements CrudRepository<E> {
                 return entities;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
             throw new DataBaseException(e);
         }
     }

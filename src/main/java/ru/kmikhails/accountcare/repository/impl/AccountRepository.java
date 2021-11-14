@@ -1,5 +1,7 @@
 package ru.kmikhails.accountcare.repository.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.kmikhails.accountcare.entity.Account;
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class AccountRepository extends AbstractCrudRepository<Account> {
+    private static final Logger LOG = LogManager.getLogger(AccountRepository.class);
     private static final String ADD_QUERY = "INSERT INTO accounts (account_number, account_date, company_id, " +
             "service_type, amount, amount_with_nds, instruments, invoice_number, invoice_date, " +
             "delivery_to_accounting_date, inspection_organization_id, notes, account_file_path, table_type_id, " +
@@ -99,7 +102,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                 throw new DataBaseException(ex);
             }
         } catch (SQLException e) {
-//            LOG.error(e);
+            LOG.error(e);
             throw new DataBaseException(e);
         }
         return Optional.empty();
@@ -130,8 +133,9 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
 
             statement.executeUpdate();
 
-        } catch (SQLException ex) {
-            throw new DataBaseException(ex);
+        } catch (SQLException e) {
+            LOG.error(e);
+            throw new DataBaseException(e);
         }
     }
 
@@ -149,8 +153,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
             throw new DataBaseException(e);
         }
         return Optional.empty();
@@ -169,8 +172,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-//			LOG.error(e);
+			LOG.error(e);
             throw new DataBaseException(e);
         }
         return Optional.empty();

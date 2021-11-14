@@ -22,7 +22,7 @@ dependencies {
     compile group: 'org.apache.poi', name: 'poi', version: '5.0.0'
     compile group: 'org.apache.poi', name: 'poi-ooxml', version: '5.0.0'
     implementation group: 'commons-io', name: 'commons-io', version: '2.11.0'
-
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
 
     testCompile group: 'com.h2database', name: 'h2', version: '1.4.200'
 

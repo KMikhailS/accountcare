@@ -13,6 +13,7 @@ public class CompanyService implements Service<Company> {
     public CompanyService(CrudRepository<Company> companyRepository) {
         this.companyRepository = companyRepository;
     }
+
     @Override
     public void save(Company entity) {
 

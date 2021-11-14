@@ -1,5 +1,7 @@
 package ru.kmikhails.accountcare.service.impl;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.kmikhails.accountcare.entity.*;
 import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.repository.CrudRepository;
@@ -9,9 +11,9 @@ import ru.kmikhails.accountcare.validator.Validator;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class AccountServiceImpl implements AccountService {
+	private static final Logger LOG = LogManager.getLogger(AccountServiceImpl.class);
 
 	private final CrudRepository<Account> accountRepository;
 	private final Validator<Account> accountValidator;
@@ -24,17 +26,15 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public void save(Account account) {
 		accountValidator.validate(account);
-		accountRepository.save(account);
-
-//		return accountRepository.findByAccountNumberAndCompany(account.getAccountNumber(), account.getCompany())
-//				.orElseThrow(() -> new AccountException(
-//						String.format("После сохранения не могу найти счёт с номером [%s] и организацией [%s]",
-//						account.getAccountNumber(), account.getCompany())));
+		account = accountRepository.save(account).orElseThrow(() -> new AccountException("Ошибка сохранения счёта"));
+		LOG.info(String.format("Сохранён счёт с номером [%s], датой [%s], id [%d]",
+				account.getAccountNumber(), account.getAccountDate(), account.getId()));
 	}
 
 	@Override
 	public void deleteById(Long id) {
 		accountRepository.deleteById(id);
+		LOG.info(String.format("Удалён счёт с id [%d]", id));
 	}
 
 	@Override
@@ -56,6 +56,8 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public void update(Account account) {
 		accountRepository.update(account);
+		LOG.info(String.format("Изменён счёт с номером [%s], датой [%s], id [%d]",
+				account.getAccountNumber(), account.getAccountDate(), account.getId()));
 	}
 
 	@Override
