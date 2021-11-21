@@ -111,9 +111,9 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private void init() {
         int fontSize = Integer.parseInt(resource.getString("font.size"));
         font = new Font(null, Font.PLAIN, fontSize);
+        tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
 
         configureTableModel();
-        configureAccountForm();
         configureTable(fontSize);
         configureMenu();
         configurePopupMenu();
@@ -127,21 +127,37 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     private void configureTableModel() {
         List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ");
-        List<Account> otherAccounts = accountService.findAllByTableType("другие");
-        List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ");
-        List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги");
         csmTableModel = new CSMTableModel(accountService, CSMAccounts);
-        uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
-        otherTableModel = new OtherTableModel(accountService, otherAccounts);
-        serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);
         commonTableModel = csmTableModel;
     }
 
-    private void configureAccountForm() {
-        companies = companyService.findAll().toArray(new Company[0]);
-        organizations = inspectionOrganizationService.findAll().toArray(new InspectionOrganization[0]);
-        tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
-        accountForm = new AccountForm(accountService, commonTableModel, companies, tableTypes, organizations);
+    private void configureUNIIMTableModel() {
+        if (uniimTableModel == null) {
+            List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ");
+            uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
+        }
+    }
+
+    private void configureOtherTableModel() {
+        if (otherTableModel == null) {
+            List<Account> otherAccounts = accountService.findAllByTableType("другие");
+            otherTableModel = new OtherTableModel(accountService, otherAccounts);
+        }
+    }
+
+    private void configureServiceTableModel() {
+        if (serviceTableModel == null) {
+            List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги");
+            serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);
+        }
+    }
+
+    private void configureAccountForm(boolean isReconfig) {
+        if (accountForm == null || isReconfig) {
+            companies = companyService.findAll().toArray(new Company[0]);
+            organizations = inspectionOrganizationService.findAll().toArray(new InspectionOrganization[0]);
+            accountForm = new AccountForm(accountService, commonTableModel, companies, tableTypes, organizations);
+        }
     }
 
     private void configureTable(int fontSize) {
@@ -357,6 +373,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     }
 
     private void addNewRow() {
+        configureAccountForm(false);
         accountForm.setUpdate(false);
         accountForm.showNewForm(pickTableType());
     }
@@ -374,6 +391,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     private void updateRow() {
         Account account = findAccountForRow();
+        configureAccountForm(false);
         accountForm.setUpdate(true);
         accountForm.showExistForm(account);
     }
@@ -454,7 +472,9 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         sortTable();
         mainScrollPane = new JScrollPane(table);
         this.add(mainScrollPane, BorderLayout.CENTER);
-        accountForm.setTableMode(tableModel);
+        if (accountForm != null) {
+            accountForm.setTableMode(tableModel);
+        }
         this.revalidate();
         this.repaint();
     }
@@ -537,12 +557,15 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
                     resetTableModel(csmTableModel, fontSize);
                     break;
                 case "УНИИМ":
+                    configureUNIIMTableModel();
                     resetTableModel(uniimTableModel, fontSize);
                     break;
                 case "другие":
+                    configureOtherTableModel();
                     resetTableModel(otherTableModel, fontSize);
                     break;
                 case "прочие услуги":
+                    configureServiceTableModel();
                     resetTableModel(serviceTableModel, fontSize);
                     break;
                 default:
@@ -571,6 +594,6 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     @Override
     public void reconfigureAccountForm() {
-        configureAccountForm();
+        configureAccountForm(true);
     }
 }

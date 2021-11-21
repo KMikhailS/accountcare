@@ -2,7 +2,9 @@ package ru.kmikhails.accountcare.view.settings;
 
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.service.impl.CompanyService;
+import ru.kmikhails.accountcare.util.StringUtils;
 
+import javax.swing.*;
 import java.util.List;
 
 public class CompanySettingsFrame extends AbstractDictionarySettingsFrame {
@@ -30,9 +32,11 @@ public class CompanySettingsFrame extends AbstractDictionarySettingsFrame {
     @Override
     protected void deleteElement() {
         String element = jList.getSelectedValue();
-        Company company = companyService.findByName(element);
-        companyService.deleteById(company.getId());
-        listModel.remove(jList.getSelectedIndex());
+        if (element != null) {
+            Company company = companyService.findByName(element);
+            companyService.deleteById(company.getId());
+            listModel.remove(jList.getSelectedIndex());
+        }
     }
 
     @Override

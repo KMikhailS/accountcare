@@ -1,5 +1,7 @@
 package ru.kmikhails.accountcare.view.settings;
 
+import ru.kmikhails.accountcare.util.StringUtils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowEvent;
@@ -60,13 +62,18 @@ public class EnterValueFrame extends JFrame {
 
     private void addSaveButtonActionListener() {
         String newValue = enterTextField.getText();
-        if (isUpdate) {
-            if (!oldValue.equals(newValue)) {
-                listener.updateValue(oldValue, newValue);
-            }
+        if (StringUtils.isEmpty(newValue)) {
+            JOptionPane.showMessageDialog(this, "Введите не пустое значение",
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);
         } else {
-            listener.saveValue(newValue);
+            if (isUpdate) {
+                if (!oldValue.equals(newValue)) {
+                    listener.updateValue(oldValue, newValue);
+                }
+            } else {
+                listener.saveValue(newValue);
+            }
+            this.dispose();
         }
-        this.dispose();
     }
 }

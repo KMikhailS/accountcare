@@ -5,7 +5,6 @@ import ru.kmikhails.accountcare.entity.AccountStatus;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 public interface AccountService extends Service<Account> {
 

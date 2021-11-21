@@ -96,6 +96,7 @@ public abstract class AbstractDictionarySettingsFrame extends JFrame
 		setSize(new Dimension(600, 600));
 		setLocationRelativeTo(null);
 		dispatchEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING));
+		setResizable(false);
 		setVisible(true);
 	}
 
@@ -111,8 +112,10 @@ public abstract class AbstractDictionarySettingsFrame extends JFrame
 	}
 
 	protected void openUpdateValueFrame() {
-		EnterValueFrame enterValueFrame = new EnterValueFrame(this, jList.getSelectedValue(), true);
-		SwingUtilities.invokeLater(enterValueFrame::init);
+		if (jList.getSelectedValue() != null) {
+			EnterValueFrame enterValueFrame = new EnterValueFrame(this, jList.getSelectedValue(), true);
+			SwingUtilities.invokeLater(enterValueFrame::init);
+		}
 	}
 
 	protected abstract void updateElement(String oldValue, String newValue);

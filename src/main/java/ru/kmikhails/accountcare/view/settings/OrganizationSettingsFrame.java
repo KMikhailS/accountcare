@@ -2,7 +2,9 @@ package ru.kmikhails.accountcare.view.settings;
 
 import ru.kmikhails.accountcare.entity.InspectionOrganization;
 import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
+import ru.kmikhails.accountcare.util.StringUtils;
 
+import javax.swing.*;
 import java.util.List;
 
 public class OrganizationSettingsFrame extends AbstractDictionarySettingsFrame {
