@@ -20,12 +20,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 public class AccountForm extends JFrame {
-
-    private static final String[] COMPANIES = {"СКБ", "КТБ", "С-1"};
-    private static final String[] INSPECTION_ORGANIZATIONS = {"ЧЦСМ", "УНИИМ", "ТЕРМЕКС", "УРАЛТЕСТ", "ВНИИМС",
-            "ВНИИМ", "СНИИМ", "ТЕСТ ИНТЕХ", "ВНИИОФИ", "ИМЦ МИКРО", "ФИЗПРИБОР"};
-    private static final String[] TABLE_TYPES = {"ЧСЦМ", "УНИИМ", "Другие", "Прочие услуги"};
-
     private static final Insets STANDARD_INSET = new Insets(10, 0, 0, 0);
     private static final Insets CENTER_OFFSET_INSET = new Insets(10, 10, 0, 0);
     private static final Insets BOX_INSET = new Insets(-15, 0, 0, 0);

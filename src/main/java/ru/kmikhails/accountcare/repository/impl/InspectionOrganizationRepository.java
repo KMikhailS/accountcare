@@ -20,7 +20,9 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
     private static final String FIND_ALL_QUERY = "SELECT * FROM inspection_organizations";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM inspection_organizations WHERE inspection_organization_id = ?";
     private static final String FIND_BY_NAME_QUERY = "SELECT * FROM inspection_organizations WHERE inspection_organization = ?";
-
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM inspection_organizations WHERE inspection_organization_id = ?";
+    private static final String UPDATE_QUERY = "UPDATE inspection_organizations SET inspection_organization = ? " +
+            "WHERE inspection_organization_id = ?";
 
     public InspectionOrganizationRepository(DataSource dataSource) {
         super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY, FIND_BY_NAME_QUERY);
@@ -53,7 +55,16 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
 
     @Override
     public void deleteById(Long id) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(DELETE_BY_ID_QUERY)) {
 
+            statement.setLong(1, id);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            LOG.error(e);
+            throw new DataBaseException(e);
+        }
     }
 
     @Override
@@ -68,7 +79,18 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
 
     @Override
     public void update(InspectionOrganization inspectionOrganization) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
 
+            insert(statement, inspectionOrganization);
+            statement.setLong(2, inspectionOrganization.getId());
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            LOG.error(e);
+            throw new DataBaseException(e);
+        }
     }
 
     @Override

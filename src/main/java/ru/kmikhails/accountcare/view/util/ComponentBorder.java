@@ -1,4 +1,4 @@
-package ru.kmikhails.accountcare.view;
+package ru.kmikhails.accountcare.view.util;
 
 import java.awt.*;
 import javax.swing.*;

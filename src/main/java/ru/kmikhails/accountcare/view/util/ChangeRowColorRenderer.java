@@ -1,4 +1,4 @@
-package ru.kmikhails.accountcare.view.renderer;
+package ru.kmikhails.accountcare.view.util;
 
 import ru.kmikhails.accountcare.view.tablemodel.CommonTableModel;
 

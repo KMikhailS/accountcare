@@ -8,7 +8,7 @@
         </Console>
         <RollingFile name="rollingFile"
                      fileName="logs/accountcare.log"
-                     filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+                     filePattern="logs/$${date:yyyy-MM}/accountcare-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout>
                 <Pattern>%d{ISO8601} [%-5p][%-4.16t][%20c{-2}] - %m%n</Pattern>
             </PatternLayout>

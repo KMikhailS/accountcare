@@ -20,7 +20,8 @@ public class CompanyRepository extends AbstractCrudRepository<Company> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM companies";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM companies WHERE company_id = ?";
     private static final String FIND_BY_NAME_QUERY = "SELECT * FROM companies WHERE company = ?";
-
+    private static final String DELETE_BY_ID_QUERY = "DELETE FROM companies WHERE company_id = ?";
+    private static final String UPDATE_QUERY = "UPDATE companies SET company = ? WHERE company_id = ?";
 
     public CompanyRepository(DataSource dataSource) {
         super(dataSource, ADD_QUERY, FIND_BY_ID_QUERY, FIND_BY_NAME_QUERY);
@@ -52,7 +53,16 @@ public class CompanyRepository extends AbstractCrudRepository<Company> {
 
     @Override
     public void deleteById(Long id) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(DELETE_BY_ID_QUERY)) {
 
+            statement.setLong(1, id);
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            LOG.error(e);
+            throw new DataBaseException(e);
+        }
     }
 
     @Override
@@ -67,7 +77,18 @@ public class CompanyRepository extends AbstractCrudRepository<Company> {
 
     @Override
     public void update(Company company) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
 
+            insert(statement, company);
+            statement.setLong(2, company.getId());
+
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            LOG.error(e);
+            throw new DataBaseException(e);
+        }
     }
 
     @Override

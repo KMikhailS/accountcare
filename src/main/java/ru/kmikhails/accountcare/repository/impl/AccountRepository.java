@@ -63,7 +63,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                     "JOIN table_types t " +
                     "ON a.table_type_id = t.table_type_id " +
                     "WHERE t.table_type = ? AND status = 'NEW'";
-    private static final String UPDATE = "UPDATE accounts SET account_number = ?, account_date = ?, company_id = ?," +
+    private static final String UPDATE_QUERY = "UPDATE accounts SET account_number = ?, account_date = ?, company_id = ?," +
             "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
             "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
             "table_type_id = ?, is_our = ?, invoice_file_path = ?, row_color = ? WHERE account_id = ?";
@@ -126,7 +126,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     @Override
     public void update(Account account) {
         try (final Connection connection = dataSource.getConnection();
-             final PreparedStatement statement = connection.prepareStatement(UPDATE)) {
+             final PreparedStatement statement = connection.prepareStatement(UPDATE_QUERY)) {
 
             insert(statement, account);
             statement.setLong(18, account.getId());
