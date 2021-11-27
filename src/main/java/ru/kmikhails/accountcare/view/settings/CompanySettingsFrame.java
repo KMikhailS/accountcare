@@ -2,9 +2,7 @@ package ru.kmikhails.accountcare.view.settings;
 
 import ru.kmikhails.accountcare.entity.Company;
 import ru.kmikhails.accountcare.service.impl.CompanyService;
-import ru.kmikhails.accountcare.util.StringUtils;
 
-import javax.swing.*;
 import java.util.List;
 
 public class CompanySettingsFrame extends AbstractDictionarySettingsFrame {

@@ -52,8 +52,8 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private static final String SHOW_SCAN = "Показать скан";
     private static final String UPDATE_TABLE = "Обновить таблицу";
     private static final String SETTINGS = "Настройки";
-    private static final String COMPANY_SETTINGS = "Настройки Предприятия";
-    private static final String ORGANIZATION_SETTINGS = "Настройки Поверяющей организации";
+    private static final String COMPANY_SETTINGS = "Предприятие";
+    private static final String ORGANIZATION_SETTINGS = "Поверяющая организация";
     private static final String HIGHLIGHT_OUR = "Выделить \"наш\"";
     private static final String UNSET_HIGHLIGHT_OUR = "Снять выделение \"наш\"";
     private static final String EXPORT = "Экспорт";
