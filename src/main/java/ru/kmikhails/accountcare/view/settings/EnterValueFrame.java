@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.event.WindowEvent;
 
 public class EnterValueFrame extends JFrame {
-    private static final Dimension FORM_SIZE = new Dimension(450, 125);
+    private static final Dimension FORM_SIZE = new Dimension(450, 140);
 
     private final SaveValueListener listener;
     private final boolean isUpdate;

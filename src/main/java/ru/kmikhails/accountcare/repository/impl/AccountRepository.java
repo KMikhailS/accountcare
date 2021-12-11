@@ -62,7 +62,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                     "ON a.inspection_organization_id = io.inspection_organization_id " +
                     "JOIN table_types t " +
                     "ON a.table_type_id = t.table_type_id " +
-                    "WHERE t.table_type = ? AND status = 'NEW'";
+                    "WHERE t.table_type = ? AND status = 'NEW' AND date_part('year', a.account_date) = ?";
     private static final String UPDATE_QUERY = "UPDATE accounts SET account_number = ?, account_date = ?, company_id = ?," +
             "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
             "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
@@ -114,8 +114,24 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     }
 
     @Override
-    public List<Account> findAllByTableType(String tableType) {
-        return findAllByStringParam(tableType, FIND_ALL_BY_TABLE_TYPE_QUERY, STRING_PARAM_SETTER);
+    public List<Account> findAllByTableType(String tableType, int year) {
+        try (final Connection connection = dataSource.getConnection();
+             final PreparedStatement statement = connection.prepareStatement(FIND_ALL_BY_TABLE_TYPE_QUERY)) {
+
+            statement.setString(1, tableType);
+            statement.setInt(2, year);
+
+            try (final ResultSet resultSet = statement.executeQuery()) {
+                List<Account> entities = new ArrayList<>();
+                while (resultSet.next()) {
+                    entities.add(mapResultSetToEntity(resultSet));
+                }
+                return entities;
+            }
+        } catch (SQLException e) {
+            LOG.error(e);
+            throw new DataBaseException(e);
+        }
     }
 
     @Override

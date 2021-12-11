@@ -79,7 +79,7 @@ public abstract class AbstractDictionarySettingsFrame extends JFrame
 
 		JScrollPane listScroller = new JScrollPane(jList);
 		listScroller.setBorder(new CompoundBorder(new EmptyBorder(10, 10, 10, 10),
-				BorderFactory.createTitledBorder("")));
+				BorderFactory.createTitledBorder(frameName)));
 		listScroller.setPreferredSize(new Dimension(350, 600));
 
 		Border border = listScroller.getBorder();

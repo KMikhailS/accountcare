@@ -72,6 +72,7 @@ public class AccountForm extends JFrame {
     private JButton cancelButton;
     private JCheckBox ourCheckBox;
     private JLabel ourLabel;
+    private int year;
 
     private boolean isUpdate;
 
@@ -82,12 +83,13 @@ public class AccountForm extends JFrame {
     private final TableType[] tableTypes;
 
     public AccountForm(AccountService accountService, CommonTableModel tableModel, Company[] companies, TableType[] tableTypes,
-                       InspectionOrganization[] organizations) {
+                       InspectionOrganization[] organizations, int year) {
         this.accountService = accountService;
         this.tableModel = tableModel;
         this.companies = companies;
         this.organizations = organizations;
         this.tableTypes = tableTypes;
+        this.year = year;
         init();
     }
 
@@ -405,7 +407,7 @@ public class AccountForm extends JFrame {
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
                                 accountChooserTextField.getText(), ourCheckBox.isSelected(), null, existAccount.getRowColor());
-                        tableModel.update(account);
+                        tableModel.update(account, year);
                     } else {
                         if (accountService.findByAccountNumberAndDate(accountNumberTextField.getText(),
                                 accountDatePicker.getDate()) != null) {
@@ -420,7 +422,7 @@ public class AccountForm extends JFrame {
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
                                 accountChooserTextField.getText(), ourCheckBox.isSelected(), null, null);
-                        tableModel.addRow(account);
+                        tableModel.addRow(account, year);
                     }
                 } else {
                     throw new AccountException("Номер счёта и дата не должны быть пустыми");

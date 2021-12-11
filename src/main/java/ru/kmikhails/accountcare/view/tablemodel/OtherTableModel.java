@@ -77,8 +77,8 @@ public class OtherTableModel extends CommonTableModel {
         }
     }
 
-    public void updateTable() {
-        accounts = accountService.findAllByTableType("другие");
+    public void updateTable(int year) {
+        accounts = accountService.findAllByTableType("другие", year);
         this.fireTableDataChanged();
     }
 

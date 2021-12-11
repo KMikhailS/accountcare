@@ -73,7 +73,7 @@ public class InspectionOrganizationRepository extends AbstractCrudRepository<Ins
     }
 
     @Override
-    public List<InspectionOrganization> findAllByTableType(String tableType) {
+    public List<InspectionOrganization> findAllByTableType(String tableType, int year) {
         return null;
     }
 

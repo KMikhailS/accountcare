@@ -74,8 +74,8 @@ public class CSMTableModel extends CommonTableModel {
         }
     }
 
-    public void updateTable() {
-        accounts = accountService.findAllByTableType("ЧЦСМ");
+    public void updateTable(int year) {
+        accounts = accountService.findAllByTableType("ЧЦСМ", year);
         this.fireTableDataChanged();
     }
 

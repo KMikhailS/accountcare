@@ -15,6 +15,7 @@ import ru.kmikhails.accountcare.service.impl.TableTypeService;
 import ru.kmikhails.accountcare.util.ExcelExporter;
 import ru.kmikhails.accountcare.util.PdfRunner;
 import ru.kmikhails.accountcare.util.StringUtils;
+import ru.kmikhails.accountcare.view.settings.YearSettings;
 import ru.kmikhails.accountcare.view.util.ChangeRowColorRenderer;
 import ru.kmikhails.accountcare.view.settings.CompanySettingsFrame;
 import ru.kmikhails.accountcare.view.settings.OrganizationSettingsFrame;
@@ -54,12 +55,12 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private static final String SETTINGS = "Настройки";
     private static final String COMPANY_SETTINGS = "Предприятие";
     private static final String ORGANIZATION_SETTINGS = "Поверяющая организация";
+    private static final String YEAR_SETTINGS = "Год";
     private static final String HIGHLIGHT_OUR = "Выделить \"наш\"";
     private static final String UNSET_HIGHLIGHT_OUR = "Снять выделение \"наш\"";
     private static final String EXPORT = "Экспорт";
     private static final String EXPORT_EXCEL_CSM = "Экспорт счетов без фактур ЧЦСМ";
     private static final String MENU = "Меню";
-    private static final String[] YEARS = new String[]{"2021"};
 
     private final AccountService accountService;
     private final CompanyService companyService;
@@ -84,6 +85,8 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private InspectionOrganization[] organizations;
     private TableType[] tableTypes;
     private AccountForm accountForm;
+    private JComboBox<String> yearComboBox;
+    private int year;
 
     public MainFrame(ResourceBundle resource, AccountService accountService, CompanyService companyService,
                      TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService) {
@@ -110,14 +113,18 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     private void init() {
         int fontSize = Integer.parseInt(resource.getString("font.size"));
+        String[] years = resource.getString("years.range").split(",");
+        String defaultYear = resource.getString("years.default");
+
         font = new Font(null, Font.PLAIN, fontSize);
         tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
 
-        configureTableModel();
+        configureYear(fontSize, years, defaultYear);
+        configureTableModel(year);
         configureTable(fontSize);
         configureMenu();
         configurePopupMenu();
-        printMainInterface(fontSize);
+        printMainInterface(fontSize, years, defaultYear);
 
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
@@ -125,29 +132,43 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         this.setVisible(true);
     }
 
-    private void configureTableModel() {
-        List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ");
+    private void configureYear(int fontSize, String[] years, String defaultYear) {
+        yearComboBox = new JComboBox<>();
+        yearComboBox.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
+        yearComboBox.setModel(new DefaultComboBoxModel<>(years));
+        yearComboBox.setSelectedItem(defaultYear);
+        yearComboBox.addActionListener(e -> changeYear());
+        year = Integer.parseInt(yearComboBox.getSelectedItem().toString());
+    }
+
+    private void changeYear() {
+        year = Integer.parseInt(yearComboBox.getSelectedItem().toString());
+        commonTableModel.updateYear(year);
+    }
+
+    private void configureTableModel(int year) {
+        List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ", year);
         csmTableModel = new CSMTableModel(accountService, CSMAccounts);
         commonTableModel = csmTableModel;
     }
 
-    private void configureUNIIMTableModel() {
+    private void configureUNIIMTableModel(int year) {
         if (uniimTableModel == null) {
-            List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ");
+            List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ", year);
             uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
         }
     }
 
-    private void configureOtherTableModel() {
+    private void configureOtherTableModel(int year) {
         if (otherTableModel == null) {
-            List<Account> otherAccounts = accountService.findAllByTableType("другие");
+            List<Account> otherAccounts = accountService.findAllByTableType("другие", year);
             otherTableModel = new OtherTableModel(accountService, otherAccounts);
         }
     }
 
-    private void configureServiceTableModel() {
+    private void configureServiceTableModel(int year) {
         if (serviceTableModel == null) {
-            List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги");
+            List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги", year);
             serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);
         }
     }
@@ -156,7 +177,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         if (accountForm == null || isReconfig) {
             companies = companyService.findAll().toArray(new Company[0]);
             organizations = inspectionOrganizationService.findAll().toArray(new InspectionOrganization[0]);
-            accountForm = new AccountForm(accountService, commonTableModel, companies, tableTypes, organizations);
+            accountForm = new AccountForm(accountService, commonTableModel, companies, tableTypes, organizations, year);
         }
     }
 
@@ -220,6 +241,10 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         settingsMenu.add(organizationSettingsTableMenuItem);
         organizationSettingsTableMenuItem.addActionListener(e -> openOrganizationSettings());
 
+        JMenuItem yearSettingsTableMenuItem = new JMenuItem(YEAR_SETTINGS);
+        settingsMenu.add(yearSettingsTableMenuItem);
+        yearSettingsTableMenuItem.addActionListener(e -> openYearSettings());
+
         JMenuItem exportForCsmMenuItem = new JMenuItem(EXPORT_EXCEL_CSM);
         exportMenu.add(exportForCsmMenuItem);
         exportForCsmMenuItem.addActionListener(e -> exportToExel());
@@ -250,7 +275,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         table.setComponentPopupMenu(popupMenu);
     }
 
-    private void printMainInterface(int fontSize) {
+    private void printMainInterface(int fontSize, String[] years, String defaultYear) {
         this.setLayout(new BorderLayout());
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(0, 70));
@@ -261,9 +286,6 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         yearLabel.setBounds(43, 11, 46, fontSize + 5);
         buttonPanel.add(yearLabel);
 
-        JComboBox<String> yearComboBox = new JComboBox<>();
-        yearComboBox.setFont(new Font("Tahoma", Font.PLAIN, fontSize));
-        yearComboBox.setModel(new DefaultComboBoxModel<>(YEARS));
         yearComboBox.setBounds(43, 36, 105, fontSize + 5);
         buttonPanel.add(yearComboBox);
 
@@ -385,7 +407,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
             int rowNumber = table.getSelectedRow();
             String accountNumber = (String) table.getValueAt(rowNumber, 0);
             LocalDate date = (LocalDate) table.getValueAt(rowNumber, 1);
-            commonTableModel.deleteRow(accountNumber, date);
+            commonTableModel.deleteRow(accountNumber, date, year);
         }
     }
 
@@ -442,7 +464,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     private void exportToExel() {
         SwingUtilities.invokeLater(() -> {
-            List<Account> accounts = accountService.findAllByTableType("ЧЦСМ").stream()
+            List<Account> accounts = accountService.findAllByTableType("ЧЦСМ", year).stream()
                     .filter(account -> account.getInvoiceNumber().isEmpty())
                     .sorted(Comparator.comparing(Account::getAccountNumber))
                     .collect(Collectors.toList());
@@ -480,10 +502,10 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     }
 
     private void updateTable() {
-        csmTableModel.updateTable();
-        uniimTableModel.updateTable();
-        otherTableModel.updateTable();
-        serviceTableModel.updateTable();
+        csmTableModel.updateTable(year);
+        uniimTableModel.updateTable(year);
+        otherTableModel.updateTable(year);
+        serviceTableModel.updateTable(year);
     }
 
     private void openCompanySettings() {
@@ -498,6 +520,10 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
                 .map(InspectionOrganization::getInspectionOrganization)
                 .collect(Collectors.toList());
         new OrganizationSettingsFrame(inspectionOrganizationService, organizations, ORGANIZATION_SETTINGS, this).init();
+    }
+
+    private void openYearSettings() {
+        new YearSettings(resource).init();
     }
 
     private Account findAccountForRow() {
@@ -537,12 +563,12 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
             private void highlight() {
                 for (int i = 0; i < table.getRowCount(); i++) {
-                    int i1 = table.getRowSorter().convertRowIndexToView(i);
+                    int rowIndex = table.getRowSorter().convertRowIndexToView(i);
                     String valueAt = (String) table.getModel().getValueAt(i, 0);
                     if (searchTextField.getText().equalsIgnoreCase(valueAt)) {
-                        table.setRowSelectionInterval(i1, i1);
+                        table.setRowSelectionInterval(rowIndex, rowIndex);
                     } else {
-                        table.removeRowSelectionInterval(i1, i1);
+                        table.removeRowSelectionInterval(rowIndex, rowIndex);
                     }
                 }
             }
@@ -557,15 +583,15 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
                     resetTableModel(csmTableModel, fontSize);
                     break;
                 case "УНИИМ":
-                    configureUNIIMTableModel();
+                    configureUNIIMTableModel(year);
                     resetTableModel(uniimTableModel, fontSize);
                     break;
                 case "другие":
-                    configureOtherTableModel();
+                    configureOtherTableModel(year);
                     resetTableModel(otherTableModel, fontSize);
                     break;
                 case "прочие услуги":
-                    configureServiceTableModel();
+                    configureServiceTableModel(year);
                     resetTableModel(serviceTableModel, fontSize);
                     break;
                 default:

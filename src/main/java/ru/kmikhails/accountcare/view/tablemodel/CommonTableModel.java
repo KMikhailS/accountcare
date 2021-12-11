@@ -18,6 +18,10 @@ public abstract class CommonTableModel extends AbstractTableModel {
         this.accounts = accounts;
     }
 
+    public void updateYear(int year) {
+        updateTable(year);
+    }
+
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         return false;
@@ -42,7 +46,7 @@ public abstract class CommonTableModel extends AbstractTableModel {
     @Override
     public abstract Object getValueAt(int rowIndex, int columnIndex);
 
-    public abstract void updateTable();
+    public abstract void updateTable(int year);
 
     public abstract String getTableTypeName();
 
@@ -54,19 +58,19 @@ public abstract class CommonTableModel extends AbstractTableModel {
         return Color.BLACK;
     }
 
-    public void deleteRow(String accountNumber, LocalDate date) {
+    public void deleteRow(String accountNumber, LocalDate date, int year) {
         accounts.stream()
                 .filter(acc -> acc.getAccountNumber().equals(accountNumber))
                 .filter(acc -> acc.getAccountDate().equals(date))
                 .filter(acc -> acc.getStatus().equals("NEW"))
                 .findFirst()
                 .ifPresent(account -> accountService.deleteById(account.getId()));
-        updateTable();
+        updateTable(year);
     }
 
-    public void addRow(Account account) {
+    public void addRow(Account account, int year) {
         accountService.save(account);
-        updateTable();
+        updateTable(year);
     }
 
     public Account findAccount(String accountNumber, LocalDate date) {
@@ -78,8 +82,8 @@ public abstract class CommonTableModel extends AbstractTableModel {
                 .orElse(null);
     }
 
-    public void update(Account account) {
+    public void update(Account account, int year) {
         accountService.update(account);
-        updateTable();
+        updateTable(year);
     }
 }

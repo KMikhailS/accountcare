@@ -14,7 +14,7 @@ public interface CrudRepository<E> {
 
 	List<E> findAll();
 
-	List<E> findAllByTableType(String tableType);
+	List<E> findAllByTableType(String tableType, int year);
 
 	void update(E e);
 

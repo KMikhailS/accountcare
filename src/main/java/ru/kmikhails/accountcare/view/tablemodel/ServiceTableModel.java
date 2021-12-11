@@ -74,8 +74,8 @@ public class ServiceTableModel extends CommonTableModel {
         }
     }
 
-    public void updateTable() {
-        accounts = accountService.findAllByTableType("прочие услуги");
+    public void updateTable(int year) {
+        accounts = accountService.findAllByTableType("прочие услуги", year);
         this.fireTableDataChanged();
     }
 
