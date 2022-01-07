@@ -10,7 +10,7 @@ public interface AccountService extends Service<Account> {
 
 	void changeStatus(Long id, AccountStatus status);
 
-	List<Account> findAllByTableType(String tableType, int year);
+	List<Account> findAllByTableType(String tableType, String year);
 
 	Account findByAccountNumberAndDate(String accountNumber, LocalDate date);
 

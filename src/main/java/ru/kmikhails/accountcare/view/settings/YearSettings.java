@@ -156,6 +156,7 @@ public class YearSettings extends JFrame {
             lines.set(7, "years.default=" + defaultYear);
             Files.write(path, lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Ошибка изменения свойств",
                     "Ошибка", JOptionPane.ERROR_MESSAGE);
         }

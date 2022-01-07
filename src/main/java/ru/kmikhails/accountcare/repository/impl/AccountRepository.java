@@ -62,7 +62,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
                     "ON a.inspection_organization_id = io.inspection_organization_id " +
                     "JOIN table_types t " +
                     "ON a.table_type_id = t.table_type_id " +
-                    "WHERE t.table_type = ? AND status = 'NEW' AND date_part('year', a.account_date) = ?";
+                    "WHERE t.table_type = ? AND status = 'NEW' AND strftime('%Y', a.account_date) = ?";
     private static final String UPDATE_QUERY = "UPDATE accounts SET account_number = ?, account_date = ?, company_id = ?," +
             "service_type = ?, amount = ?, amount_with_nds = ?, instruments = ?, invoice_number = ?, invoice_date = ?," +
             "delivery_to_accounting_date = ?, inspection_organization_id = ?, notes = ?, account_file_path = ?," +
@@ -114,12 +114,12 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     }
 
     @Override
-    public List<Account> findAllByTableType(String tableType, int year) {
+    public List<Account> findAllByTableType(String tableType, String year) {
         try (final Connection connection = dataSource.getConnection();
              final PreparedStatement statement = connection.prepareStatement(FIND_ALL_BY_TABLE_TYPE_QUERY)) {
 
             statement.setString(1, tableType);
-            statement.setInt(2, year);
+            statement.setString(2, year);
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 List<Account> entities = new ArrayList<>();
@@ -197,9 +197,9 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
     protected void insert(PreparedStatement statement, Account account) throws SQLException {
         statement.setString(1, account.getAccountNumber());
         if (account.getAccountDate() != null) {
-            statement.setDate(2, Date.valueOf(account.getAccountDate()));
+            statement.setString(2, account.getAccountDate().toString());
         } else {
-            statement.setDate(2, null);
+            statement.setString(2, null);
         }
         statement.setLong(3, account.getCompany().getId());
         statement.setString(4, account.getServiceType());
@@ -208,14 +208,14 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
         statement.setString(7, account.getInstruments());
         statement.setString(8, account.getInvoiceNumber());
         if (account.getInvoiceDate() != null) {
-            statement.setDate(9, Date.valueOf(account.getInvoiceDate()));
+            statement.setString(9, account.getInvoiceDate().toString());
         } else {
-            statement.setDate(9, null);
+            statement.setString(9, null);
         }
         if (account.getDeliveryToAccountingDate() != null) {
-            statement.setDate(10, Date.valueOf(account.getDeliveryToAccountingDate()));
+            statement.setString(10, account.getDeliveryToAccountingDate().toString());
         } else {
-            statement.setDate(10, null);
+            statement.setString(10, null);
         }
         statement.setLong(11, account.getInspectionOrganization().getId());
         statement.setString(12, account.getNotes());

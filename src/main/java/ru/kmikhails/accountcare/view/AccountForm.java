@@ -72,7 +72,7 @@ public class AccountForm extends JFrame {
     private JButton cancelButton;
     private JCheckBox ourCheckBox;
     private JLabel ourLabel;
-    private int year;
+    private String year;
 
     private boolean isUpdate;
 
@@ -83,7 +83,7 @@ public class AccountForm extends JFrame {
     private final TableType[] tableTypes;
 
     public AccountForm(AccountService accountService, CommonTableModel tableModel, Company[] companies, TableType[] tableTypes,
-                       InspectionOrganization[] organizations, int year) {
+                       InspectionOrganization[] organizations, String year) {
         this.accountService = accountService;
         this.tableModel = tableModel;
         this.companies = companies;

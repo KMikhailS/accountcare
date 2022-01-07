@@ -86,7 +86,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private TableType[] tableTypes;
     private AccountForm accountForm;
     private JComboBox<String> yearComboBox;
-    private int year;
+    private String year;
 
     public MainFrame(ResourceBundle resource, AccountService accountService, CompanyService companyService,
                      TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService) {
@@ -138,35 +138,35 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         yearComboBox.setModel(new DefaultComboBoxModel<>(years));
         yearComboBox.setSelectedItem(defaultYear);
         yearComboBox.addActionListener(e -> changeYear());
-        year = Integer.parseInt(yearComboBox.getSelectedItem().toString());
+        year = yearComboBox.getSelectedItem().toString();
     }
 
     private void changeYear() {
-        year = Integer.parseInt(yearComboBox.getSelectedItem().toString());
+        year = yearComboBox.getSelectedItem().toString();
         commonTableModel.updateYear(year);
     }
 
-    private void configureTableModel(int year) {
+    private void configureTableModel(String year) {
         List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ", year);
         csmTableModel = new CSMTableModel(accountService, CSMAccounts);
         commonTableModel = csmTableModel;
     }
 
-    private void configureUNIIMTableModel(int year) {
+    private void configureUNIIMTableModel(String year) {
         if (uniimTableModel == null) {
             List<Account> UNIIMAccounts = accountService.findAllByTableType("УНИИМ", year);
             uniimTableModel = new UNIIMTableModel(accountService, UNIIMAccounts);
         }
     }
 
-    private void configureOtherTableModel(int year) {
+    private void configureOtherTableModel(String year) {
         if (otherTableModel == null) {
             List<Account> otherAccounts = accountService.findAllByTableType("другие", year);
             otherTableModel = new OtherTableModel(accountService, otherAccounts);
         }
     }
 
-    private void configureServiceTableModel(int year) {
+    private void configureServiceTableModel(String year) {
         if (serviceTableModel == null) {
             List<Account> serviceAccounts = accountService.findAllByTableType("прочие услуги", year);
             serviceTableModel = new ServiceTableModel(accountService, serviceAccounts);

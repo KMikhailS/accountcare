@@ -71,7 +71,7 @@ public class CompanyRepository extends AbstractCrudRepository<Company> {
     }
 
     @Override
-    public List<Company> findAllByTableType(String tableType, int year) {
+    public List<Company> findAllByTableType(String tableType, String year) {
         return null;
     }
 

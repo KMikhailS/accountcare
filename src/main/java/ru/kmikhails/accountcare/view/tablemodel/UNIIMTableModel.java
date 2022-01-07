@@ -71,7 +71,7 @@ public class UNIIMTableModel extends CommonTableModel {
         }
     }
 
-    public void updateTable(int year) {
+    public void updateTable(String year) {
         accounts = accountService.findAllByTableType("УНИИМ", year);
         this.fireTableDataChanged();
     }

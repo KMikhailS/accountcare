@@ -18,7 +18,7 @@ public abstract class CommonTableModel extends AbstractTableModel {
         this.accounts = accounts;
     }
 
-    public void updateYear(int year) {
+    public void updateYear(String year) {
         updateTable(year);
     }
 
@@ -46,7 +46,7 @@ public abstract class CommonTableModel extends AbstractTableModel {
     @Override
     public abstract Object getValueAt(int rowIndex, int columnIndex);
 
-    public abstract void updateTable(int year);
+    public abstract void updateTable(String year);
 
     public abstract String getTableTypeName();
 
@@ -58,7 +58,7 @@ public abstract class CommonTableModel extends AbstractTableModel {
         return Color.BLACK;
     }
 
-    public void deleteRow(String accountNumber, LocalDate date, int year) {
+    public void deleteRow(String accountNumber, LocalDate date, String year) {
         accounts.stream()
                 .filter(acc -> acc.getAccountNumber().equals(accountNumber))
                 .filter(acc -> acc.getAccountDate().equals(date))
@@ -68,7 +68,7 @@ public abstract class CommonTableModel extends AbstractTableModel {
         updateTable(year);
     }
 
-    public void addRow(Account account, int year) {
+    public void addRow(Account account, String year) {
         accountService.save(account);
         updateTable(year);
     }
@@ -82,7 +82,7 @@ public abstract class CommonTableModel extends AbstractTableModel {
                 .orElse(null);
     }
 
-    public void update(Account account, int year) {
+    public void update(Account account, String year) {
         accountService.update(account);
         updateTable(year);
     }

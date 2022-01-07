@@ -66,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public List<Account> findAllByTableType(String tableType, int year) {
+	public List<Account> findAllByTableType(String tableType, String year) {
 		return accountRepository.findAllByTableType(tableType, year);
 	}
 
