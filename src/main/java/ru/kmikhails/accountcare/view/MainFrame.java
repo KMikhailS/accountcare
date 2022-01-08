@@ -3,24 +3,22 @@ package ru.kmikhails.accountcare.view;
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.kmikhails.accountcare.entity.Account;
-import ru.kmikhails.accountcare.entity.Company;
-import ru.kmikhails.accountcare.entity.InspectionOrganization;
-import ru.kmikhails.accountcare.entity.TableType;
+import ru.kmikhails.accountcare.entity.*;
 import ru.kmikhails.accountcare.exception.AccountException;
 import ru.kmikhails.accountcare.service.AccountService;
+import ru.kmikhails.accountcare.service.YearService;
 import ru.kmikhails.accountcare.service.impl.CompanyService;
 import ru.kmikhails.accountcare.service.impl.InspectionOrganizationService;
 import ru.kmikhails.accountcare.service.impl.TableTypeService;
 import ru.kmikhails.accountcare.util.ExcelExporter;
 import ru.kmikhails.accountcare.util.PdfRunner;
 import ru.kmikhails.accountcare.util.StringUtils;
-import ru.kmikhails.accountcare.view.settings.YearSettings;
-import ru.kmikhails.accountcare.view.util.ChangeRowColorRenderer;
 import ru.kmikhails.accountcare.view.settings.CompanySettingsFrame;
 import ru.kmikhails.accountcare.view.settings.OrganizationSettingsFrame;
 import ru.kmikhails.accountcare.view.settings.ReconfigureAccountFormListener;
+import ru.kmikhails.accountcare.view.settings.YearSettings;
 import ru.kmikhails.accountcare.view.tablemodel.*;
+import ru.kmikhails.accountcare.view.util.ChangeRowColorRenderer;
 import ru.kmikhails.accountcare.view.util.ComponentBorder;
 import ru.kmikhails.accountcare.view.util.TableMouseListener;
 
@@ -34,10 +32,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -67,6 +61,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private final InspectionOrganizationService inspectionOrganizationService;
     private final TableTypeService tableTypeService;
     private final ResourceBundle resource;
+    private final YearService yearService;
 
     private CSMTableModel csmTableModel;
     private UNIIMTableModel uniimTableModel;
@@ -89,12 +84,14 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private String year;
 
     public MainFrame(ResourceBundle resource, AccountService accountService, CompanyService companyService,
-                     TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService) {
+                     TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService,
+                     YearService yearService) {
         this.resource = resource;
         this.accountService = accountService;
         this.companyService = companyService;
         this.inspectionOrganizationService = inspectionOrganizationService;
         this.tableTypeService = tableTypeService;
+        this.yearService = yearService;
     }
 
     public void run() {
@@ -102,7 +99,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 //            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
             SwingUtilities.invokeLater(() -> new MainFrame(resource, accountService, companyService,
-                    tableTypeService, inspectionOrganizationService).init());
+                    tableTypeService, inspectionOrganizationService, yearService).init());
         } catch (Exception e) {
             LOG.error("Критическая ошибка отображения формы", e);
             JOptionPane.showMessageDialog(this, "Критическая ошибка отображения формы\nОбратитесь в поддержку",
@@ -113,8 +110,9 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     private void init() {
         int fontSize = Integer.parseInt(resource.getString("font.size"));
-        String[] years = resource.getString("years.range").split(",");
-        String defaultYear = resource.getString("years.default");
+        YearValues yearValues = yearService.getYearValues();
+        String[] years = yearValues.getRange().split(",");
+        String defaultYear = yearValues.getDefaultValue();
 
         font = new Font(null, Font.PLAIN, fontSize);
         tableTypes = tableTypeService.findAll().toArray(new TableType[0]);
@@ -355,8 +353,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     }
 
     private byte[] getIconBytes(String fileName) {
-        try {
-            InputStream iconInputStream = getClass().getClassLoader().getResourceAsStream(fileName);
+        try (InputStream iconInputStream = getClass().getClassLoader().getResourceAsStream(fileName)) {
             if (iconInputStream != null) {
                 return IOUtils.toByteArray(iconInputStream);
             }
@@ -523,7 +520,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     }
 
     private void openYearSettings() {
-        new YearSettings(resource).init();
+        new YearSettings(yearService).init();
     }
 
     private Account findAccountForRow() {
@@ -599,21 +596,6 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
             }
         } else {
             JOptionPane.showMessageDialog(this, "Не выбран тип таблицы",
-                    "Ошибка", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    private void changeProperty() {
-        Path path = Paths.get("src/main/resources/config.properties");
-        try {
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-            lines.set(1, "font.size=22");
-            Files.write(path, lines, StandardCharsets.UTF_8);
-//            buttonPanel.revalidate();
-//            buttonPanel.repaint();
-//            this.dispose();
-        } catch (IOException e) {
-            JOptionPane.showMessageDialog(this, "Ошибка изменения свойств",
                     "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }

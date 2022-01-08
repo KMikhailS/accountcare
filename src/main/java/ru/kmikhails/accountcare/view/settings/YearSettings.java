@@ -1,5 +1,9 @@
 package ru.kmikhails.accountcare.view.settings;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import ru.kmikhails.accountcare.entity.YearValues;
+import ru.kmikhails.accountcare.service.YearService;
 import ru.kmikhails.accountcare.util.StringUtils;
 import ru.kmikhails.accountcare.view.util.HorizontalPanel;
 import ru.kmikhails.accountcare.view.util.VerticalPanel;
@@ -9,29 +13,25 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.ResourceBundle;
 
 public class YearSettings extends JFrame {
+    private static final Logger LOG = LogManager.getLogger(YearSettings.class);
     private static final int FRAME_WIDTH = 400;
+    private static final String PROPERTY_FILE = "application.properties";
 
-    private final ResourceBundle resource;
+    private final YearService yearService;
     private JList<String> jList;
     private DefaultListModel<String> listModel;
     private JTextField defaultYearText;
 
-    public YearSettings(ResourceBundle resource) {
-        this.resource = resource;
+    public YearSettings(YearService yearService) {
+        this.yearService = yearService;
     }
 
     public void init() {
-        String[] years = resource.getString("years.range").split(",");
-        String defaultYear = resource.getString("years.default");
+        YearValues yearValues = yearService.getYearValues();
+        String[] years = yearValues.getRange().split(",");
+        String defaultYear = yearValues.getDefaultValue();
 
         listModel = new DefaultListModel<>();
         for (String year : years) {
@@ -141,25 +141,21 @@ public class YearSettings extends JFrame {
                 listModel.addElement(value);
             }
         } catch (NumberFormatException e) {
+            LOG.error("Введен некорректный год", e);
             JOptionPane.showMessageDialog(this, "Введите правильный год",
                     "Ошибка", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void setProperty() {
-        Path path = Paths.get("src/main/resources/application.properties");
-        try {
-            String yearRange = createYearRange();
-            String defaultYear = defaultYearText.getText();
-            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
-            lines.set(6, "years.range=" + yearRange);
-            lines.set(7, "years.default=" + defaultYear);
-            Files.write(path, lines, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Ошибка изменения свойств",
-                    "Ошибка", JOptionPane.ERROR_MESSAGE);
-        }
+        String yearRange = createYearRange();
+        String defaultYear = defaultYearText.getText();
+
+        YearValues yearValues = YearValues.builder()
+                .withRange(yearRange)
+                .withDefaultValue(defaultYear)
+                .build();
+        yearService.updateYearValues(yearValues);
     }
 
     private String createYearRange() {
