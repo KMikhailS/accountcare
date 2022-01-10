@@ -19,5 +19,5 @@ public interface AccountService extends Service<Account> {
 						 Long tableTypeId, String tableType, String amount, String amountWithNDS,
 						 String instruments, String invoiceNumber, LocalDate invoiceDate,
 						 LocalDate deliveryToAccountingDate, String notes, String accountFile,
-						 Boolean isOur, String invoiceFile, Integer rowColor);
+						 Boolean isOur, Boolean isPrepayment, String invoiceFile, Integer rowColor);
 }

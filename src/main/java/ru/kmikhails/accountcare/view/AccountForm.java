@@ -72,6 +72,8 @@ public class AccountForm extends JFrame {
     private JButton cancelButton;
     private JCheckBox ourCheckBox;
     private JLabel ourLabel;
+    private JLabel prepaymentLabel;
+    private JCheckBox prepaymentCheckBox;
     private String year;
 
     private boolean isUpdate;
@@ -179,6 +181,16 @@ public class AccountForm extends JFrame {
         constraints.gridx = 3;
         constraints.gridy = 2;
         contentPane.add(ourCheckBox, constraints);
+
+        prepaymentLabel = new JLabel("Метка АВАНС");
+        prepaymentLabel.setFont(FONT);
+        constraints.gridx = 3;
+        constraints.gridy = 3;
+        contentPane.add(prepaymentLabel, constraints);
+        prepaymentCheckBox = new JCheckBox();
+        constraints.gridx = 3;
+        constraints.gridy = 4;
+        contentPane.add(prepaymentCheckBox, constraints);
 
         inspectionOrganizationLabel = new JLabel("Поверяющая организация");
         inspectionOrganizationLabel.setFont(FONT);
@@ -406,7 +418,8 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                accountChooserTextField.getText(), ourCheckBox.isSelected(), null, existAccount.getRowColor());
+                                accountChooserTextField.getText(), ourCheckBox.isSelected(), prepaymentCheckBox.isSelected(),
+                                null, existAccount.getRowColor());
                         tableModel.update(account, year);
                     } else {
                         if (accountService.findByAccountNumberAndDate(accountNumberTextField.getText(),
@@ -421,7 +434,8 @@ public class AccountForm extends JFrame {
                                 ((TableType) tableTypeBox.getSelectedItem()).getTableType(), amountTextField.getText(),
                                 amountWithNDSField.getText(), instrumentsTextArea.getText(), invoiceNumberTextField.getText(),
                                 invoiceDatePicker.getDate(), deliveryToAccountingDatePicker.getDate(), notesTextArea.getText(),
-                                accountChooserTextField.getText(), ourCheckBox.isSelected(), null, null);
+                                accountChooserTextField.getText(), ourCheckBox.isSelected(), prepaymentCheckBox.isSelected(),
+                                null, null);
                         tableModel.addRow(account, year);
                     }
                 } else {
@@ -472,6 +486,7 @@ public class AccountForm extends JFrame {
                 .withTableType(tableType.getTableType())
                 .build());
         ourCheckBox.setSelected(false);
+        prepaymentCheckBox.setSelected(false);
         this.setVisible(true);
     }
 
@@ -501,6 +516,7 @@ public class AccountForm extends JFrame {
         notesTextArea.setText(account.getNotes());
         accountChooserTextField.setText(account.getAccountFile());
         ourCheckBox.setSelected(account.getOur());
+        prepaymentCheckBox.setSelected(account.getPrepayment());
         this.setVisible(true);
     }
 }

@@ -21,6 +21,7 @@ public class Account {
 	private String status;
 	private final TableType tableType;
 	private final Boolean isOur;
+	private final Boolean isPrepayment;
 	private final String invoiceFile;
 	private final Integer rowColor;
 
@@ -42,6 +43,7 @@ public class Account {
 		this.status = builder.status;
 		this.tableType = builder.tableType;
 		this.isOur = builder.isOur;
+		this.isPrepayment = builder.isPrepayment;
 		this.invoiceFile = builder.invoiceFile;
 		this.rowColor = builder.rowColor;
 	}
@@ -122,6 +124,10 @@ public class Account {
 		return isOur;
 	}
 
+	public Boolean getPrepayment() {
+		return isPrepayment;
+	}
+
 	public String getInvoiceFile() {
 		return invoiceFile;
 	}
@@ -150,6 +156,7 @@ public class Account {
 				", status='" + status + '\'' +
 				", tableType=" + tableType +
 				", isOur=" + isOur +
+				", isPrepayment=" + isPrepayment +
 				", invoiceFile='" + invoiceFile + '\'' +
 				", rowColor=" + rowColor +
 				'}';
@@ -179,6 +186,7 @@ public class Account {
 				Objects.equals(notes, account.notes) &&
 				Objects.equals(accountFile, account.accountFile) &&
 				Objects.equals(isOur, account.isOur) &&
+				Objects.equals(isPrepayment, account.isPrepayment) &&
 				Objects.equals(invoiceFile, account.invoiceFile) &&
 				Objects.equals(rowColor, account.rowColor) &&
 				Objects.equals(tableType, account.tableType) &&
@@ -189,7 +197,7 @@ public class Account {
 	public int hashCode() {
 		return Objects.hash(id, accountNumber, accountDate, company, serviceType, instruments, amount,
 				amountWithNDS, invoiceNumber, invoiceDate, deliveryToAccountingDate, inspectionOrganization,
-				notes, accountFile, status, tableType, isOur, invoiceFile, rowColor);
+				notes, accountFile, status, tableType, isOur, isPrepayment, invoiceFile, rowColor);
 	}
 
 	public static class Builder {
@@ -210,6 +218,7 @@ public class Account {
 		private String status;
 		private TableType tableType;
 		private Boolean isOur;
+		private Boolean isPrepayment;
 		private String invoiceFile;
 		private Integer rowColor;
 
@@ -301,6 +310,11 @@ public class Account {
 
 		public Builder withIsOur(Boolean isOur) {
 			this.isOur = isOur;
+			return this;
+		}
+
+		public Builder withIsPrepayment(Boolean isPrepayment) {
+			this.isPrepayment = isPrepayment;
 			return this;
 		}
 

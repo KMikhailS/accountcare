@@ -81,7 +81,7 @@ public class AccountServiceImpl implements AccountService {
 								 Long tableTypeId, String tableType, String amount, String amountWithNDS,
 								 String instruments, String invoiceNumber, LocalDate invoiceDate,
 								 LocalDate deliveryToAccountingDate, String notes, String accountFile,
-								 Boolean isOur, String invoiceFile, Integer rowColor) {
+								 Boolean isOur, Boolean isPrepayment, String invoiceFile, Integer rowColor) {
 		return Account.builder()
 				.withId(id)
 				.withAccountNumber(accountNumber)
@@ -108,6 +108,7 @@ public class AccountServiceImpl implements AccountService {
 				.withNotes(notes)
 				.withAccountFile(accountFile)
 				.withIsOur(isOur)
+				.withIsPrepayment(isPrepayment)
 				.withInvoiceFile(invoiceFile)
 				.withRowColor(rowColor)
 				.build();

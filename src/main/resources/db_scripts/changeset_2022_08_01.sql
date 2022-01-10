@@ -2,3 +2,5 @@ CREATE TABLE years (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
 range VARCHAR(255),
 default_value VARCHAR(4));
+
+ALTER TABLE accounts ADD COLUMN  text;

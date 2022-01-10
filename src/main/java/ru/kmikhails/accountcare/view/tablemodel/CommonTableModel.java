@@ -54,6 +54,8 @@ public abstract class CommonTableModel extends AbstractTableModel {
         Account ourAccount = accounts.get(row);
         if (ourAccount.getOur()) {
             return Color.BLUE;
+        } else if (ourAccount.getPrepayment()) {
+            return new Color(255, 50, 175);
         }
         return Color.BLACK;
     }

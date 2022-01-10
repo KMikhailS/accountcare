@@ -20,10 +20,10 @@ public class ChangeRowColorRenderer extends DefaultTableCellRenderer {
             value = FORMATTER.format(date);
         }
         CommonTableModel model = (CommonTableModel) table.getModel();
-        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         int trueRow = table.getRowSorter().convertRowIndexToModel(row);
-        c.setForeground(model.getRowColor(trueRow));
+        cell.setForeground(model.getRowColor(trueRow));
 
-        return c;
+        return cell;
     }
 }

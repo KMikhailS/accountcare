@@ -1,8 +1,5 @@
 package ru.kmikhails.accountcare.repository;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
-
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;

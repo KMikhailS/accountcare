@@ -25,6 +25,8 @@ import ru.kmikhails.accountcare.view.util.TableMouseListener;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -50,8 +52,9 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private static final String COMPANY_SETTINGS = "Предприятие";
     private static final String ORGANIZATION_SETTINGS = "Поверяющая организация";
     private static final String YEAR_SETTINGS = "Год";
-    private static final String HIGHLIGHT_OUR = "Выделить \"наш\"";
-    private static final String UNSET_HIGHLIGHT_OUR = "Снять выделение \"наш\"";
+    private static final String LABELS = "Метки";
+    private static final String OUR_LABEL = "НАШ";
+    private static final String PREPAYMENT_LABEL = "АВАНС";
     private static final String EXPORT = "Экспорт";
     private static final String EXPORT_EXCEL_CSM = "Экспорт счетов без фактур ЧЦСМ";
     private static final String MENU = "Меню";
@@ -82,6 +85,8 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private AccountForm accountForm;
     private JComboBox<String> yearComboBox;
     private String year;
+    private JMenuItem menuItemSetOur;
+    private JMenuItem menuItemSetPrepayment;
 
     public MainFrame(ResourceBundle resource, AccountService accountService, CompanyService companyService,
                      TableTypeService tableTypeService, InspectionOrganizationService inspectionOrganizationService,
@@ -122,7 +127,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         configureTable(fontSize);
         configureMenu();
         configurePopupMenu();
-        printMainInterface(fontSize, years, defaultYear);
+        printMainInterface(fontSize);
 
         this.setExtendedState(JFrame.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
@@ -254,26 +259,33 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         JMenuItem menuItemRemove = new JMenuItem(DELETE_ROW);
         JMenuItem menuItemUpdate = new JMenuItem(UPDATE_ROW);
         JMenuItem menuItemShowScan = new JMenuItem(SHOW_SCAN);
-        JMenuItem menuItemSetOur = new JMenuItem(HIGHLIGHT_OUR);
-        JMenuItem menuItemUnSetOur = new JMenuItem(UNSET_HIGHLIGHT_OUR);
+        JMenu menuItemLabels = new JMenu(LABELS);
+        menuItemSetOur = new JMenuItem(OUR_LABEL);
+        menuItemSetPrepayment = new JMenuItem(PREPAYMENT_LABEL);
+        menuItemLabels.add(menuItemSetOur);
+        menuItemLabels.add(menuItemSetPrepayment);
+
         menuItemAdd.addActionListener(this);
         menuItemRemove.addActionListener(this);
         menuItemUpdate.addActionListener(this);
         menuItemShowScan.addActionListener(this);
         menuItemSetOur.addActionListener(this);
-        menuItemUnSetOur.addActionListener(this);
+        menuItemSetPrepayment.addActionListener(this);
+        
         popupMenu.add(menuItemAdd);
         popupMenu.add(menuItemUpdate);
         popupMenu.add(menuItemRemove);
         popupMenu.add(new JSeparator());
         popupMenu.add(menuItemShowScan);
         popupMenu.add(new JSeparator());
-        popupMenu.add(menuItemSetOur);
-        popupMenu.add(menuItemUnSetOur);
+        popupMenu.add(menuItemLabels);
+
+        popupMenu.addPopupMenuListener(setPopupMenuListener());
+
         table.setComponentPopupMenu(popupMenu);
     }
 
-    private void printMainInterface(int fontSize, String[] years, String defaultYear) {
+    private void printMainInterface(int fontSize) {
         this.setLayout(new BorderLayout());
         buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(0, 70));
@@ -352,6 +364,23 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         }
     }
 
+    private void setLabelIcon(JMenuItem menuItem, boolean isActive) {
+        ImageIcon labelIcon = getLabelIcon();
+        if (isActive) {
+            menuItem.setIcon(labelIcon);
+        } else {
+            menuItem.setIcon(null);
+        }
+    }
+
+    private ImageIcon getLabelIcon() {
+        byte[] labelIconBytes = getIconBytes("check_mark.png");
+        if (labelIconBytes != null && labelIconBytes.length > 0) {
+            return new ImageIcon(labelIconBytes);
+        }
+        return null;
+    }
+
     private byte[] getIconBytes(String fileName) {
         try (InputStream iconInputStream = getClass().getClassLoader().getResourceAsStream(fileName)) {
             if (iconInputStream != null) {
@@ -379,11 +408,19 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
             case SHOW_SCAN:
                 showScan();
                 break;
-            case HIGHLIGHT_OUR:
-                highlightOur();
+            case OUR_LABEL:
+                if (menuItemSetOur.getIcon() == null) {
+                    highlightOur();
+                } else {
+                    unHighlightOur();
+                }
                 break;
-            case UNSET_HIGHLIGHT_OUR:
-                unHighlightOur();
+            case PREPAYMENT_LABEL:
+                if (menuItemSetPrepayment.getIcon() == null) {
+                    highlightPrepayment();
+                } else {
+                    unHighlightPrepayment();
+                }
                 break;
             default:
                 JOptionPane.showMessageDialog(this, String.format("Ошибка при выборе меню [%s]", menuItem.getText()),
@@ -440,7 +477,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
                 account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
                 account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
                 account.getAmountWithNDS(), account.getInstruments(), account.getInvoiceNumber(), account.getInvoiceDate(),
-                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), true,
+                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), true, account.getPrepayment(),
                 account.getInvoiceFile(), account.getRowColor());
         accountService.update(ourAccount);
         updateTable();
@@ -453,7 +490,33 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
                 account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
                 account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
                 account.getAmountWithNDS(), account.getInstruments(), account.getInvoiceNumber(), account.getInvoiceDate(),
-                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), false,
+                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), false, account.getPrepayment(),
+                account.getInvoiceFile(), account.getRowColor());
+        accountService.update(ourAccount);
+        updateTable();
+    }
+
+    private void highlightPrepayment() {
+        Account account = findAccountForRow();
+        Account ourAccount = accountService.buildAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
+                account.getCompany().getId(), account.getCompany().getCompany(), account.getInspectionOrganization().getId(),
+                account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
+                account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
+                account.getAmountWithNDS(), account.getInstruments(), account.getInvoiceNumber(), account.getInvoiceDate(),
+                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), account.getOur(), true,
+                account.getInvoiceFile(), account.getRowColor());
+        accountService.update(ourAccount);
+        updateTable();
+    }
+
+    private void unHighlightPrepayment() {
+        Account account = findAccountForRow();
+        Account ourAccount = accountService.buildAccount(account.getId(), account.getAccountNumber(), account.getAccountDate(),
+                account.getCompany().getId(), account.getCompany().getCompany(), account.getInspectionOrganization().getId(),
+                account.getInspectionOrganization().getInspectionOrganization(), account.getServiceType(),
+                account.getTableType().getId(), account.getTableType().getTableType(), account.getAmount(),
+                account.getAmountWithNDS(), account.getInstruments(), account.getInvoiceNumber(), account.getInvoiceDate(),
+                account.getDeliveryToAccountingDate(), account.getNotes(), account.getAccountFile(), account.getOur(), false,
                 account.getInvoiceFile(), account.getRowColor());
         accountService.update(ourAccount);
         updateTable();
@@ -500,8 +563,17 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
 
     private void updateTable() {
         csmTableModel.updateTable(year);
+        if (uniimTableModel == null) {
+            configureUNIIMTableModel(year);
+        }
         uniimTableModel.updateTable(year);
+        if (otherTableModel == null) {
+            configureOtherTableModel(year);
+        }
         otherTableModel.updateTable(year);
+        if (serviceTableModel == null) {
+            configureServiceTableModel(year);
+        }
         serviceTableModel.updateTable(year);
     }
 
@@ -568,6 +640,28 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
                         table.removeRowSelectionInterval(rowIndex, rowIndex);
                     }
                 }
+            }
+        };
+    }
+
+    private PopupMenuListener setPopupMenuListener() {
+        return new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    Account account = findAccountForRow();
+                    setLabelIcon(menuItemSetOur, account.getOur());
+                    setLabelIcon(menuItemSetPrepayment, account.getPrepayment());
+                });
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
             }
         };
     }
