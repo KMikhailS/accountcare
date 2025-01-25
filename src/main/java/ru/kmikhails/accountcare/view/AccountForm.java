@@ -111,6 +111,10 @@ public class AccountForm extends JFrame {
         this.accountId = accountId;
     }
 
+    public void setYear(String year) {
+        this.year = year;
+    }
+
     public void init() {
         this.setLayout(new GridBagLayout());
         this.setSize(FORM_SIZE);
@@ -491,6 +495,7 @@ public class AccountForm extends JFrame {
     }
 
     public void showExistForm(Account account) {
+
         setAccountId(account.getId());
         accountNumberTextField.setText(account.getAccountNumber());
         companyBox.setSelectedItem(Company.builder()

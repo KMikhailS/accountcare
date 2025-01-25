@@ -12,12 +12,14 @@ import ru.kmikhails.accountcare.repository.DataSource;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 public class AccountRepository extends AbstractCrudRepository<Account> {
     private static final Logger LOG = LogManager.getLogger(AccountRepository.class);
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final String ADD_QUERY = "INSERT INTO accounts (account_number, account_date, company_id, " +
             "service_type, amount, amount_with_nds, instruments, invoice_number, invoice_date, " +
             "delivery_to_accounting_date, inspection_organization_id, notes, account_file_path, table_type_id, " +
@@ -161,7 +163,7 @@ public class AccountRepository extends AbstractCrudRepository<Account> {
              final PreparedStatement statement = connection.prepareStatement(FIND_BY_ACCOUNT_NUMBER_AND_DATE)) {
 
             statement.setString(1, accountNumber);
-            statement.setDate(2, Date.valueOf(date));
+            statement.setString(2, DATE_TIME_FORMATTER.format(date));
 
             try (final ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {

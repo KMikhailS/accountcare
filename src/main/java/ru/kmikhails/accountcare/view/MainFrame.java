@@ -58,6 +58,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private static final String EXPORT = "Экспорт";
     private static final String EXPORT_EXCEL_CSM = "Экспорт счетов без фактур ЧЦСМ";
     private static final String MENU = "Меню";
+    private static final String CALCULATE_AMOUNTS = "Посчитать суммы";
 
     private final AccountService accountService;
     private final CompanyService companyService;
@@ -235,6 +236,10 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         JMenuItem updateTableMenuItem = new JMenuItem(UPDATE_TABLE);
         mainMenu.add(updateTableMenuItem);
         updateTableMenuItem.addActionListener(e -> updateTable());
+
+        JMenuItem calculateAmountsMenuItem = new JMenuItem(CALCULATE_AMOUNTS);
+        mainMenu.add(calculateAmountsMenuItem);
+        calculateAmountsMenuItem.addActionListener(e -> calculateAmounts());
 
         JMenuItem companySettingsTableMenuItem = new JMenuItem(COMPANY_SETTINGS);
         settingsMenu.add(companySettingsTableMenuItem);
@@ -431,7 +436,13 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
     private void addNewRow() {
         configureAccountForm(false);
         accountForm.setUpdate(false);
+        accountForm.setYear(year);
         accountForm.showNewForm(pickTableType());
+    }
+
+    private void calculateAmounts() {
+        List<Account> CSMAccounts = accountService.findAllByTableType("ЧЦСМ", year);
+        SwingUtilities.invokeLater(() -> new AccountAmountFrame(CSMAccounts).init());
     }
 
     private void deleteRow() {
@@ -449,6 +460,7 @@ public class MainFrame extends JFrame implements ActionListener, ReconfigureAcco
         Account account = findAccountForRow();
         configureAccountForm(false);
         accountForm.setUpdate(true);
+        accountForm.setYear(year);
         accountForm.showExistForm(account);
     }
 

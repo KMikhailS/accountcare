@@ -1,4 +1,4 @@
- DROP DATABASE IF EXISTS accountcare;
+DROP DATABASE IF EXISTS accountcare;
 
 CREATE DATABASE accountcare;
 
@@ -58,3 +58,45 @@ FOREIGN KEY (inspection_organization_id) REFERENCES inspection_organizations (in
 ON DELETE CASCADE);
 
 COMMENT ON TABLE accounts IS 'Accounts';
+
+
+CREATE TABLE accounts (
+    account_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    status VARCHAR(10) DEFAULT 'NEW',
+    instruments TEXT,
+    account_number VARCHAR(255),
+    account_date REAL,
+    company_id INTEGER,
+    service_type VARCHAR(255),
+    amount VARCHAR(255),
+    amount_with_nds VARCHAR(255),
+    invoice_number VARCHAR(255),
+    invoice_date REAL,
+    delivery_to_accounting_date REAL,
+    inspection_organization_id INTEGER,
+    notes TEXT,
+    account_file_path TEXT,
+    table_type_id INTEGER,
+    invoice_file_path TEXT,
+    row_color INTEGER,
+    is_our INTEGER,
+    FOREIGN KEY (company_id) REFERENCES companies (company_id),
+    FOREIGN KEY (table_type_id) REFERENCES table_types (table_type_id),
+    FOREIGN KEY (inspection_organization_id) REFERENCES inspection_organizations (inspection_organization_id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE companies (
+    company_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company VARCHAR(255)
+);
+
+CREATE TABLE inspection_organizations (
+    inspection_organization_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    inspection_organization VARCHAR(255)
+);
+
+CREATE TABLE table_types (
+    table_type_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    table_type VARCHAR(255)
+);
